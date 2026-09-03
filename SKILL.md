@@ -1,78 +1,92 @@
 ---
 name: agents-init
-description: Ставит в проект рабочие соглашения для агента — AGENTS.md, BACKLOG.md и CLAUDE.md-указатель, собранные из личного шаблона Сергея. Ядро плюс опциональные модули: дизайн-первый цикл и релизы в стор. Использовать, когда пользователь заводит новый проект и просит поставить соглашения, договорённости, AGENTS.md, «стартер», «шаблон правил», зовёт /agents-init, либо когда в существующем репозитории таких правил нет и он просит их завести. Не использовать для правки уже стоящего AGENTS.md — это обычное редактирование файла.
+description: Installs working agreements into a project — AGENTS.md, BACKLOG.md and a CLAUDE.md pointer, assembled from the templates in this skill. A core plus optional modules: a design-first cycle and store releases. Use it when someone starts a new project and asks for working agreements, conventions, an AGENTS.md, a "starter" or a "rules template", invokes /agents-init, or when an existing repository has no such rules and they ask for them. Do not use it to edit an AGENTS.md that is already installed — that is ordinary file editing.
 ---
 
-# Рабочие соглашения в новый проект
+# Working agreements for a project
 
-Ставит три файла: `AGENTS.md` (соглашения), `BACKLOG.md` (список работы),
-`CLAUDE.md` (одна строка `@AGENTS.md`, чтобы Claude Code подхватил тот же
-файл, который читают остальные агенты).
+Installs three files: `AGENTS.md` (the agreements), `BACKLOG.md` (the list of
+work), and `CLAUDE.md` (a single line, `@AGENTS.md`, so that Claude Code picks
+up the same file every other agent reads).
 
-Шаблон лежит рядом: `templates/AGENTS.core.md` и `templates/modules/*.md`.
+The templates sit next to this file: `templates/AGENTS.core.md` and
+`templates/modules/*.md`.
 
-## Порядок
+## Procedure
 
-### 1. Посмотреть, что уже есть
+### 1. Look at what is already there
 
 ```bash
 ls AGENTS.md CLAUDE.md BACKLOG.md 2>/dev/null
 ```
 
-**Существующий `AGENTS.md` не перезаписывать.** Если он есть — прочитать его,
-показать пользователю, чего из шаблона в нём не хватает, и спросить, дописать
-ли недостающие разделы. Соглашения пишутся кровью; чужой файл может нести
-правила, которых нет в шаблоне.
+**Never overwrite an existing `AGENTS.md`.** If there is one, read it, show the
+user which parts of the template it is missing, and ask whether to add the
+missing sections. Agreements are written in blood; somebody else's file may
+carry rules the template has never heard of.
 
-### 2. Спросить три вещи, не больше
+### 2. Ask three things, and no more
 
-Коротко, одним вопросом через инструмент выбора:
+Briefly, as one question through the choice tool:
 
-1. **Что за проект** — одна строка, пойдёт в заголовок и в примеры.
-2. **Есть ли дизайн в контуре** — нужен ли модуль `design-first`. Он про то,
-   что код начинается только после утверждённого макета, и про то, как
-   агенту не сломать файл макетов.
-3. **Есть ли релизы в стор** — нужен ли модуль `mobile-release`. Он про
-   conventional commits с двуязычными трейлерами, про сверку номера сборки,
-   про то, что релиз режется в одном дереве, и про то, почему коммит уходит
-   в `origin` сразу, а не после проверки на сборке.
+1. **What the project is** — one line, which goes into the heading and the
+   examples.
+2. **Whether design is in the loop** — whether the `design-first` module is
+   needed. It covers code starting only after an approved mockup, and how an
+   agent avoids breaking the design file.
+3. **Whether there are store releases** — whether the `mobile-release` module
+   is needed. It covers conventional commits with bilingual trailers, checking
+   the build number, a release being cut in one tree, and why a commit goes to
+   `origin` immediately rather than after it has been verified on a build.
 
-Ничего больше не спрашивать. Остальное — заполняемые места в тексте, их
-дешевле поправить потом, чем угадывать сейчас.
+Ask nothing else. Everything else is a fill-in-the-blank in the text, and those
+are cheaper to correct later than to guess now.
 
-### 3. Собрать файл
+### 3. Assemble the file
 
-Порядок сборки: `templates/AGENTS.core.md` → выбранные модули в том порядке,
-в каком они перечислены выше → `templates/AGENTS.tail.md`.
+Assembly order: `templates/AGENTS.core.md` → the chosen modules in the order
+listed above → `templates/AGENTS.tail.md`.
 
-Хвост идёт последним всегда: это раздел о том, как дописывать файл, и в
-середине готового документа он читается как вставка.
+The tail always comes last: it is the section about how to extend the file, and
+in the middle of a finished document it reads like an insertion.
 
-**Заполнить все `{{...}}`.** Это единственная разметка для подстановки;
-угловые скобки вроде `<type>(<scope>)` или `<state> WIP — <feature>` — часть
-показываемого формата, их не трогать.
+**Fill in every `{{...}}`.** That is the only substitution markup; angle
+brackets such as `<type>(<scope>)` or `<state> WIP — <feature>` are part of a
+format being shown, so leave them alone.
 
-Незаполненное `{{...}}` оставлять нельзя: либо значение, либо удалить абзац
-целиком. Правило, которое не досказано, никто не выполнит. После сборки
-проверить, что ни одного `{{` в файле не осталось.
+An unfilled `{{...}}` may not be left behind: either give it a value or delete
+the paragraph outright. A rule that stops halfway is a rule nobody follows.
+After assembling, check that no `{{` remains in the file.
 
-### 4. Создать `BACKLOG.md` и `CLAUDE.md`
+### 4. Create `BACKLOG.md` and `CLAUDE.md`
 
-`BACKLOG.md` — из `templates/BACKLOG.md`, если файла ещё нет.
-`CLAUDE.md` — ровно одна строка `@AGENTS.md`, если файла ещё нет.
+`BACKLOG.md` — from `templates/BACKLOG.md`, if the file does not exist yet.
+`CLAUDE.md` — exactly one line, `@AGENTS.md`, if the file does not exist yet.
 
-### 5. Сказать, что дальше
+### 5. Say what comes next
 
-Соглашения без первой записи мертвы. В отчёте назвать **один** ближайший
-момент, когда файл надо будет дополнить: первый инцидент, первое решение,
-первая грабля. И напомнить главное правило шаблона — раздел «Как дописывать
-этот файл»: правило без истории, которая его породила, живёт до первого
-спора.
+Agreements with no first entry are dead. In the report, name **one** nearest
+moment when the file will have to be extended: the first incident, the first
+decision, the first thing that goes wrong. And repeat the template's own main
+rule, from *How to extend this file*: a rule without the story that produced it
+survives until the first argument about it.
 
-## Чего этот скилл не делает
+## Language
 
-- Не коммитит. Файлы соглашений читает человек, и он решает, когда они верны.
-- Не ставит хуки, линтеры и CI. Это отдельные инструменты со своей ценой.
-- Не переносит соглашения между проектами автоматически. Правило, выведенное
-  из чужого инцидента, — это карго-культ; модуль переносится целиком, потому
-  что несёт с собой свои истории.
+Everything this skill installs is written in English, and so is every file in
+this repository — the templates, the README, and this skill. The rulebook is
+meant to be installed into any project and read by anyone on the team, so the
+language of the conversation that invokes it does not change the language of
+what it writes. That includes the three-line report block: its labels are
+`Current task`, `Status` and `Needed from you`, in English, whatever language
+the answer around them is written in.
+
+## What this skill does not do
+
+- **It does not commit.** A human reads the agreements and decides when they
+  are right.
+- **It does not install hooks, linters or CI.** Those are separate tools with
+  their own cost.
+- **It does not carry agreements between projects automatically.** A rule
+  derived from somebody else's incident is cargo cult; a module travels whole,
+  because it brings its own stories with it.
