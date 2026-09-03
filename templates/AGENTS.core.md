@@ -8,9 +8,9 @@ Every answer closes with the same three lines, after the substance rather than
 instead of it:
 
 ```text
-**Текущая фича/задача** — the thing being worked on, in one line.
-**Статус** — where it stands: built / waiting for approval / blocked / pushed.
-**Что нужно от меня** — what only the user can do. «Ничего» when that is true.
+**Current task** — the thing being worked on, in one line.
+**Status** — where it stands: built / waiting for approval / blocked / pushed.
+**Needed from you** — what only the user can do. "Nothing" when that is true.
 ```
 
 Answers here run long — measurements, decisions, what was rejected and why —
@@ -20,10 +20,10 @@ replace it.
 
 - One sentence per line. A status that needs a paragraph has a paragraph in the
   body and a sentence here.
-- **`Что нужно от меня` is about the user.** Approvals, a choice between
+- **`Needed from you` is about the user.** Approvals, a choice between
   options, testing on a device, anything with credentials — things that cannot
   move without them. Never pad it with work the agent is about to do anyway.
-- Write «Ничего» plainly when nothing is needed. An invented ask is worse than
+- Write "Nothing" plainly when nothing is needed. An invented ask is worse than
   a blank one: it teaches the reader to skip the line.
 
 ## Saying what actually happened
