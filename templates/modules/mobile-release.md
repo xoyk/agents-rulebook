@@ -85,18 +85,10 @@ When publishing an older build after a newer one is already out, keep the
 
 ## Pushing
 
-**Push a commit as soon as it is made.** Do not hold work back until it has been
-tried on a build. Three reasons, and none of them is the one that sounds most
-likely:
-
-- **The archive is cut from a working tree**, so the commit is the only thing
-  that answers "which code is build N?". Pushing makes that answer survive one
-  laptop. The build is already with testers by then; its source should not exist
-  on a single disk.
-- **Finalizing puts the tag on the archived commit** and opens a release against
-  it. A tag pointing at a commit the remote does not have is a broken tag.
-- **A checkout can be shared.** Unpushed commits on a `HEAD` other sessions also
-  use are how one piece of work ends up split in half.
+**Committing and pushing are two decisions, and the second one is the user's.**
+An agent commits when asked and stops there; it does not push a branch, or open
+a pull request, on its own initiative. Ask, and wait — approval to push once is
+not approval for the next time.
 
 **Pushing protects nothing from later changes.** Someone else's work arrives
 only when you pull; sending yours pins nothing. The record of what was built and
@@ -104,9 +96,17 @@ tested is the release tag, not the state of the branch — so the branch is a
 stream of work rather than a known-good line, and the tags are the history of
 what shipped.
 
-The cost of this order is that a mistake found after the push costs a rewrite of
-published history. The rule that follows is therefore not "push later" but
-**commit, run the strict checks, then push**. They read trailers off commits, so
-they cannot run any earlier than the commit — but they can, and must, run before
-it leaves this machine. Rewriting a commit that is already published is a last
-resort, and the report that follows says plainly that it happened.
+One constraint does fix the timing, and only at release time: **finalizing puts
+the tag on the archived commit**, and a tag pointing at a commit the remote does
+not have is a broken tag. So the archived commit is pushed before it is tagged.
+Two smaller reasons pull the same way when the user is deciding: the archive is
+cut from a working tree, so the commit is the only thing that answers "which
+code is build N?" and it should not live on one disk while the build is with
+testers; and a shared checkout with unpushed commits on its `HEAD` is how one
+piece of work ends up split in half.
+
+**Commit, run the strict checks, then push.** The checks read trailers off
+commits, so they cannot run any earlier than the commit — but they can, and
+must, run before it leaves this machine. Rewriting a commit that is already
+published is a last resort, and the report that follows says plainly that it
+happened.
