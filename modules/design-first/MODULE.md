@@ -1,3 +1,4 @@
+<!-- rule:design-first -->
 ## Design comes first
 
 Development starts only after the relevant frame is approved. The order is
@@ -7,6 +8,7 @@ the user explicitly says the rule may be bypassed for this piece of work.
 This module assumes Figma. The workflow generalises; the API traps at the end
 do not.
 
+<!-- rule:wip-section -->
 ### A new piece of work gets its own section on `WIP`
 
 The production frames — the ones that describe every flow the product actually
@@ -60,6 +62,7 @@ everything drawn has reached the code.**
    comparison boards — goes to `Legacy` too: that is where the answer to "why
    is it like this?" belongs.
 
+<!-- rule:archiving -->
 ### Archiving
 
 Whenever a production frame is replaced:
@@ -81,6 +84,7 @@ missed, a padding never set, an invisible leftover removed. Nothing was decided
 differently, so there is nothing to explain, and the copy is one more frame
 between the reader and the ones that do explain something.
 
+<!-- rule:placement -->
 ### Placement
 
 Never place a frame by scanning `parent.children`. Build occupancy from
@@ -92,6 +96,7 @@ script — place one frame per pass, or track the boxes yourself.
 Keep the active frame's node id in the implementation source, so the code stays
 traceable to the currently approved design.
 
+<!-- rule:painting -->
 ### Painting: three traps that ship invisible text
 
 None of these announces itself. The script returns success and the canvas looks
@@ -119,6 +124,46 @@ Text needs its own colour map, separate from shapes: white means the primary
 text token, never a surface token. Dark text is correct only where the nearest
 painted ancestor is an accent; anywhere else it is a bug.
 
+**None of this is checked by eye, and there is a script for it.** It lives with
+this module rather than in any one project, so a fault found once is found
+everywhere:
+
+```bash
+node ~/.claude/skills/agents-init/modules/design-first/scripts/figma-audit.mjs 850:670
+```
+
+Everything it needs to know about this project is in `.claude/rulebook.json`,
+so the script itself belongs to nobody:
+
+```json
+"figma": {
+  "file": "<file key>",
+  "accentGrounds": ["#d8f36a"],
+  "palette": ["#1a2b22"]
+}
+```
+
+`accentGrounds` are the grounds on which dark text is legitimate — an accent, or
+a brand tile carrying a letter chosen to stay legible on it. Light grounds need
+no listing: they are recognised by luminance, because the next light surface
+will not be on anybody's list. `palette` is every colour this design system
+defines, used only to tell a leftover from this design apart from debris an
+older one left behind. The token comes from `FIGMA_TOKEN` and from nowhere a
+repository can reach.
+
+Neither list is required. Without one the matching rule still runs and reports
+more, and the run says which list was missing — a check that quietly ran on half
+its inputs is worse than one that did not run at all.
+
+It exits 1 on a fault that gates a promotion, and prints a stale base fill
+without failing, because nobody can see one. Run it before promoting a `WIP`
+section.
+
+Written 2026-08-23, the checker sat in exactly one repository, hard-coded to
+that repository's Figma file, while these three traps were installed as text in
+four. Everyone had the rule; one had the thing that enforces it.
+
+<!-- rule:design-file-shared -->
 ### Frames are one file with one history
 
 No branches, no merges. A `WIP` section belongs to the line of work that opened

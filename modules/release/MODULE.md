@@ -1,8 +1,9 @@
+<!-- rule:release-notes -->
 ## Release notes come from commits
 
-Every commit that changes what a tester can see uses a Conventional Commit
-subject and carries a trailer per audience, so the notes for a build are
-generated from the range rather than remembered afterwards.
+Every commit that changes what a tester can see carries a trailer per audience,
+on top of the subject *Commits* already requires of every commit, so the notes
+for a build are generated from the range rather than remembered afterwards.
 
 ```text
 <type>(<scope>): short implementation summary
@@ -38,6 +39,7 @@ Rules:
   but it must run before the commit leaves this machine. Fixing a rejected
   trailer that is already published costs a force-push.
 
+<!-- rule:release-tree -->
 ## One tree owns the release
 
 A release is cut in the main checkout and nothing else happens there: it keeps
@@ -49,6 +51,7 @@ Two trees bumping the build number is two builds claiming one number, which the
 store rejects. The generated native directory is also big enough that a second
 copy is a real cost rather than a tidiness point.
 
+<!-- rule:build-numbers -->
 ## Build numbers
 
 The committed configuration and the generated native project are two different
@@ -68,6 +71,7 @@ Do not assume changing the committed config updates an existing native
 directory. Two trees bumping the number is two builds claiming one number,
 which the store rejects.
 
+<!-- rule:finishing-release -->
 ## Finishing a release
 
 Tag the **exact archived commit**, never `HEAD` by assumption — the archive is
@@ -83,30 +87,7 @@ leaving gaps in a list that is supposed to be a history.
 When publishing an older build after a newer one is already out, keep the
 "latest" marker off it, or the old release takes the badge from the current one.
 
-## Pushing
-
-**Committing and pushing are two decisions, and the second one is the user's.**
-An agent commits when asked and stops there; it does not push a branch, or open
-a pull request, on its own initiative. Ask, and wait — approval to push once is
-not approval for the next time.
-
-**Pushing protects nothing from later changes.** Someone else's work arrives
-only when you pull; sending yours pins nothing. The record of what was built and
-tested is the release tag, not the state of the branch — so the branch is a
-stream of work rather than a known-good line, and the tags are the history of
-what shipped.
-
-One constraint does fix the timing, and only at release time: **finalizing puts
-the tag on the archived commit**, and a tag pointing at a commit the remote does
-not have is a broken tag. So the archived commit is pushed before it is tagged.
-Two smaller reasons pull the same way when the user is deciding: the archive is
-cut from a working tree, so the commit is the only thing that answers "which
-code is build N?" and it should not live on one disk while the build is with
-testers; and a shared checkout with unpushed commits on its `HEAD` is how one
-piece of work ends up split in half.
-
-**Commit, run the strict checks, then push.** The checks read trailers off
-commits, so they cannot run any earlier than the commit — but they can, and
-must, run before it leaves this machine. Rewriting a commit that is already
-published is a last resort, and the report that follows says plainly that it
-happened.
+**A tag needs its commit on the remote.** Finalizing puts the tag on the
+archived commit and opens a release against it, so that commit is pushed before
+it is tagged — a tag pointing at a commit the remote does not have is a broken
+tag. Everything else about when to push is in the core: see *Pushing*.
