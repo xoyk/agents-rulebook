@@ -132,9 +132,31 @@ everywhere:
 node ~/.claude/skills/agents-init/modules/design-first/scripts/figma-audit.mjs 850:670
 ```
 
-It reads the file key from `figma.file` in `.claude/rulebook.json` and the token
-from `FIGMA_TOKEN`, exits 1 on a fault that gates a promotion, and prints a stale
-base fill without failing — nobody can see one. Run it before promoting a `WIP`
+Everything it needs to know about this project is in `.claude/rulebook.json`,
+so the script itself belongs to nobody:
+
+```json
+"figma": {
+  "file": "<file key>",
+  "accentGrounds": ["#d8f36a"],
+  "palette": ["#1a2b22"]
+}
+```
+
+`accentGrounds` are the grounds on which dark text is legitimate — an accent, or
+a brand tile carrying a letter chosen to stay legible on it. Light grounds need
+no listing: they are recognised by luminance, because the next light surface
+will not be on anybody's list. `palette` is every colour this design system
+defines, used only to tell a leftover from this design apart from debris an
+older one left behind. The token comes from `FIGMA_TOKEN` and from nowhere a
+repository can reach.
+
+Neither list is required. Without one the matching rule still runs and reports
+more, and the run says which list was missing — a check that quietly ran on half
+its inputs is worse than one that did not run at all.
+
+It exits 1 on a fault that gates a promotion, and prints a stale base fill
+without failing, because nobody can see one. Run it before promoting a `WIP`
 section.
 
 Written 2026-08-23, the checker sat in exactly one repository, hard-coded to

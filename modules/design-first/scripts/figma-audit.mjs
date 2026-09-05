@@ -46,12 +46,7 @@ function readFileKey() {
   const i = process.argv.indexOf('--file');
   if (i >= 0 && process.argv[i + 1]) return process.argv[i + 1];
   if (process.env.FIGMA_FILE_KEY) return process.env.FIGMA_FILE_KEY;
-  try {
-    const stamp = JSON.parse(readFileSync('.claude/rulebook.json', 'utf8'));
-    if (stamp.figma?.file) return stamp.figma.file;
-  } catch {
-    /* no stamp, or no figma block in it */
-  }
+  if (FIGMA_CONFIG.file) return FIGMA_CONFIG.file;
   const match = readEnvFile().match(/^FIGMA_FILE_KEY=(.+)$/m);
   if (match) return match[1].trim();
   throw new Error(
@@ -68,36 +63,46 @@ function readFileKey() {
  * because the variable values are unreachable over REST on this plan — when a
  * token moves, this list moves with it.
  */
-const ACCENT_GROUNDS = new Set([
-  '#ceff68', '#a8d94f', '#3fae96', // accent/lime, lime-dim, green
-  '#ffaf33', '#6fd39a', '#ff5c77', '#7fa8dc', // status/warning, positive, negative, info
-  '#ef3124', '#ff6200', '#ffdd2d', '#21a038', '#00a758', '#36a18b', // institution tiles
-]);
-
 /*
- * Every colour the Budgy Mobile collection defines, plus the institution brand
- * palette and plain white. Used only to tell "left over from this design" from
- * "left over from the one before it" — a leftover in a token is harmless, a
- * leftover in the light marketing palette is the debris a repaint missed.
+ * The two palettes below are a project's, not this script's, and they used to be
+ * hard-coded here — which is the same fault as the file key, caught one commit
+ * later. They live in .claude/rulebook.json:
  *
- * Hardcoded for the same reason as ACCENT_GROUNDS: the Variables REST API is
- * Enterprise-only on this plan. When a token moves, this list moves with it.
+ *   "figma": {
+ *     "file": "<key>",
+ *     "accentGrounds": ["#d8f36a", "..."],
+ *     "palette": ["#1a2b22", "..."]
+ *   }
+ *
+ * accentGrounds: the grounds on which dark text is legitimate — an accent or a
+ * brand tile that carries a letter chosen to stay legible on it. Light grounds
+ * need no listing; they are recognised by luminance, because the next light
+ * surface will not be on anybody's list.
+ *
+ * palette: every colour this design system defines. Used only to tell "left over
+ * from this design" from "left over from the one before it".
+ *
+ * Both are hard to derive: the Variables REST API is Enterprise-only and answers
+ * 403 on this plan, so nothing here resolves a variable to its value. When a
+ * token moves, the list moves with it.
+ *
+ * Missing either one does not stop the run — it widens it, and main() says so.
+ * A check that quietly ran on half its inputs is worse than one that did not run.
  */
-const MOBILE_PALETTE = new Set([
-  '#11291f', '#16352a', '#1d4235', '#173829', '#0d2018',
-  '#27523f', '#1e4234',
-  '#f2f7f3', '#a8bdb1', '#8fa79b',
-  '#ceff68', '#a8d94f', '#3fae96', '#1e4a3e',
-  '#6fd39a', '#ffaf33', '#ff5c77', '#7fa8dc',
-  '#3a2e18', '#3a211d', '#d04e5a', '#ff8599',
-  '#8fa6ee', '#232e52', '#b196ec', '#33285a', '#e58fc4', '#4a2440',
-  '#6fc3d6', '#1b3f4a', '#9aa8c0', '#2a3340',
-  '#ef3124', '#ff6200', '#ffdd2d', '#21a038', '#00a758', '#36a18b',
-  '#ffffff',
-]);
+const FIGMA_CONFIG = (() => {
+  try {
+    return JSON.parse(readFileSync('.claude/rulebook.json', 'utf8')).figma ?? {};
+  } catch {
+    return {};
+  }
+})();
+
+const lower = (list) => new Set((list ?? []).map((c) => String(c).toLowerCase()));
+const ACCENT_GROUNDS = lower(FIGMA_CONFIG.accentGrounds);
+const MOBILE_PALETTE = lower(FIGMA_CONFIG.palette);
 
 /* Below this relative luminance a fill counts as dark for the rule above. */
-const DARK_TEXT_LUMINANCE = 0.4;
+const DARK_TEXT_LUMINANCE = FIGMA_CONFIG.darkTextLuminance ?? 0.4;
 
 function readToken() {
   const fromEnv = process.env.FIGMA_TOKEN;
@@ -379,6 +384,18 @@ async function main() {
     console.error('Usage: figma-audit.mjs [--file <key>] <node-id> [node-id...]');
     process.exit(2);
   }
+
+  // A rule running without its list still runs; it just reports more. Saying so
+  // is the difference between a wide result and a result nobody can trust.
+  if (!ACCENT_GROUNDS.size) {
+    console.log('note: figma.accentGrounds is not set, so dark text on a dark brand');
+    console.log('      ground is reported too. Light grounds are still judged by luminance.');
+  }
+  if (!MOBILE_PALETTE.size) {
+    console.log("note: figma.palette is not set, so a leftover in this design's own");
+    console.log('      colours is reported alongside debris from an older one.');
+  }
+  if (!ACCENT_GROUNDS.size || !MOBILE_PALETTE.size) console.log('');
 
   const nodes = await fetchNodes(readToken(), ids);
   const found = [];
