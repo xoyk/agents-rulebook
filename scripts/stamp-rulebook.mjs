@@ -110,6 +110,25 @@ if (overrides) {
   }
 }
 
+/*
+ * Everything in the file this script does not own is carried through untouched.
+ * It owns the keys below and nothing else: the file doubles as the project's
+ * configuration for the tools a module ships — figma.file, the palettes, where
+ * the token lives — and rebuilding the object from scratch quietly deleted all
+ * of it. On 2026-09-05 valey-core was wired up to the audit, re-stamped in the
+ * same sitting, and the wiring was gone before anybody typed the command; the
+ * run then failed for want of a token that had been configured minutes earlier.
+ * This is the same fault `overrides` was already protected from, so protect the
+ * rest the same way rather than naming another key.
+ */
+const OWNED = new Set([
+  "template", "source", "commit", "stamped", "basis",
+  "modules", "sections", "localSections", "overrides",
+]);
+const carried = Object.fromEntries(
+  Object.entries(previous ?? {}).filter(([k]) => !OWNED.has(k)),
+);
+
 const stamp = {
   template: "agents-init",
   source: "https://github.com/xoyk/agents-rulebook",
@@ -120,6 +139,7 @@ const stamp = {
   sections,
   ...(local.length ? { localSections: local } : {}),
   ...(overrides ? { overrides } : {}),
+  ...carried,
 };
 
 const serialised = JSON.stringify(stamp, null, 2) + "\n";
@@ -146,6 +166,8 @@ if (keepCommit) console.log(`template commit kept at ${(commit ?? "none").slice(
 console.log(`modules: ${modules.join(", ") || "core only"}`);
 if (local.length) console.log(`local:   ${local.join(", ")}`);
 if (overrides) console.log(`overrides kept: ${Object.keys(overrides).join(", ")}`);
+const carriedKeys = Object.keys(carried);
+if (carriedKeys.length) console.log(`kept as-is:     ${carriedKeys.join(", ")}`);
 if (unknown.length) {
   console.log(`\nnot in any module, and not marked local: ${unknown.join(", ")}`);
   console.log("Either they belong in the template, or they want a 'local:' prefix.");
