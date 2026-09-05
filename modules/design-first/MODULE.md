@@ -155,6 +155,22 @@ Neither list is required. Without one the matching rule still runs and reports
 more, and the run says which list was missing — a check that quietly ran on half
 its inputs is worse than one that did not run at all.
 
+**The token never has to live in the repository.** Where a project already keeps
+it somewhere a person can set through a screen — an app's own settings file —
+point at that instead, and the file key can come from the same place:
+
+```json
+"figma": {
+  "configFile": "~/.config/<app>/settings.json",
+  "tokenPath": "figma.token",
+  "filePath": "figma.files.<name>"
+}
+```
+
+Order of resolution is `FIGMA_TOKEN`, then that path, then `.env`. Nothing read
+this way is printed: a failure names the file and the key it looked under, never
+the value.
+
 It exits 1 on a fault that gates a promotion, and prints a stale base fill
 without failing, because nobody can see one. Run it before promoting a `WIP`
 section.
