@@ -34,6 +34,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { moduleOf as moduleOfCanonical } from "./lib/sections.mjs";
 import { homedir } from "node:os";
 
 const SKILL_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -172,17 +173,7 @@ function examine(root) {
   return { root, stamp, rows };
 }
 
-const MODULE_OF = {
-  "design-first": ["design-first", "wip-section", "archiving", "placement",
-                   "painting", "design-file-shared"],
-  release: ["release-notes", "release-tree", "build-numbers",
-            "finishing-release", "pushing"],
-  publishing: ["publishing", "publishing-is-overwriting", "public-invented-data"],
-};
-function moduleOf(id) {
-  for (const [name, ids] of Object.entries(MODULE_OF)) if (ids.includes(id)) return name;
-  return "core";
-}
+const moduleOf = (id) => moduleOfCanonical(id) ?? "core";
 
 function recipients() {
   if (!existsSync(REGISTRY)) {
