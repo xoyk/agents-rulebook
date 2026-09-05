@@ -276,6 +276,32 @@ function applyTo(root, r, head) {
     return [];
   }
 
+  /*
+   * The promise above — one git diff to read, one git checkout to undo — is
+   * worth nothing where git cannot see the file, and the dirty check says
+   * nothing there either: an ignored file is never "modified". A project may
+   * keep AGENTS.md out of its history on purpose; valey-core does, so the copy
+   * can travel between worktrees without carrying the core's history into them.
+   * On 2026-09-05 an --apply there wrote a section into a file with no diff and
+   * no way back, and reported success. So: leave a copy beside it and say where.
+   */
+  const tracked = (() => {
+    try {
+      return execFileSync("git", ["-C", root, "ls-files", "--error-unmatch", "--", "AGENTS.md"], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim().length > 0;
+    } catch {
+      return false; // not a checkout, or the file is ignored: same consequence
+    }
+  })();
+  if (!tracked) {
+    const backup = path + ".orig";
+    if (!existsSync(backup)) writeFileSync(backup, readFileSync(path, "utf8"));
+    console.log("  AGENTS.md is not tracked by git here, so there is no diff and no checkout.");
+    console.log(`    Kept the previous text at ${backup} — restore with: mv "${backup}" "${path}"`);
+  }
+
   const order = Object.keys(head);
   const done = [];
   for (const row of r.rows.filter((x) => WRITABLE.has(x.verdict))) {
