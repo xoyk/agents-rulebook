@@ -167,9 +167,25 @@ point at that instead, and the file key can come from the same place:
 }
 ```
 
-Order of resolution is `FIGMA_TOKEN`, then that path, then `.env`. Nothing read
-this way is printed: a failure names the file and the key it looked under, never
-the value.
+**One token usually covers every project**, so the last resort is a machine-wide
+one — the `env` block of Claude Code's own settings, which is also what puts
+`FIGMA_TOKEN` into an agent's environment. One entry then serves both: the agent
+gets it as a variable, and a person running the command by hand gets it from the
+same place.
+
+```json
+// ~/.claude/settings.json
+"env": { "FIGMA_TOKEN": "figd_..." }
+```
+
+The user-level file only. A project's own `.claude/settings.json` is committed,
+and a token belongs in neither a commit nor a review.
+
+Order of resolution, nearest first: `FIGMA_TOKEN` in the environment, then
+`figma.tokenPath` inside `figma.configFile`, then `.env` in the working
+directory, then that `env` block. Nothing read this way is printed: a failure
+names the file and the key it looked under, never the value, and lists every
+place it tried.
 
 It exits 1 on a fault that gates a promotion, and prints a stale base fill
 without failing, because nobody can see one. Run it before promoting a `WIP`
