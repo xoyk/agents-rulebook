@@ -18,6 +18,15 @@ the tools that serve those rules and they stay here. Only text is copied into a
 project. A script is invoked from this directory by path, so five projects share
 one copy and a fix reaches all of them without any sync at all.
 
+**A project that keeps a module's rule but not its text has to name the module's
+tools itself.** Declining the text is legitimate — a project may hold the
+mechanics somewhere else and leave a short `local:` pointer in their place. But
+a tool is discoverable only through the text that mentions it, so the pointer
+inherits that job. On 2026-09-05 a project did exactly this with design-first:
+the rule was there, the mechanics were in a private half, and nothing anywhere
+named the audit script. Agents working in it could not have known the tool
+existed, and nobody had configured one either.
+
 ## Procedure
 
 ### 1. Look at what is already there
