@@ -29,6 +29,7 @@
 
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 /*
  * Both of these are the project's, not the script's. The hard-coded key that
@@ -151,6 +152,31 @@ const MOBILE_PALETTE = lower(FIGMA_CONFIG.palette);
 /* Below this relative luminance a fill counts as dark for the rule above. */
 const DARK_TEXT_LUMINANCE = FIGMA_CONFIG.darkTextLuminance ?? 0.4;
 
+/*
+ * One token usually covers every project a person works on, so the last resort
+ * is a machine-wide one: the "env" block of Claude Code's own settings, which is
+ * also what puts FIGMA_TOKEN into an agent's environment. The same entry then
+ * serves both — the agent gets it as a variable, a person running the command by
+ * hand gets it from here.
+ *
+ *   ~/.claude/settings.json     { "env": { "FIGMA_TOKEN": "figd_..." } }
+ *
+ * The user-level file only. A project's own .claude/settings.json is committed,
+ * and a token belongs in neither a commit nor a review.
+ */
+function tokenFromClaudeSettings() {
+  for (const name of ['settings.local.json', 'settings.json']) {
+    try {
+      const j = JSON.parse(readFileSync(join(homedir(), '.claude', name), 'utf8'));
+      const v = j?.env?.FIGMA_TOKEN;
+      if (typeof v === 'string' && v) return v;
+    } catch {
+      // absent or unreadable: try the next, then give up quietly
+    }
+  }
+  return null;
+}
+
 function readToken() {
   const fromEnv = process.env.FIGMA_TOKEN;
   if (fromEnv) return fromEnv;
@@ -160,13 +186,17 @@ function readToken() {
   // relative to this file, which was the project root only while the script was
   // vendored into the project; from the skill it would read the skill's own.
   const match = readEnvFile().match(/^FIGMA_TOKEN=(.+)$/m);
-  if (!match) {
-    throw new Error(
-      'No Figma token. Set FIGMA_TOKEN, put it in .env, or point figma.tokenPath\n' +
-      'at the key holding it inside figma.configFile.',
-    );
-  }
-  return match[1].trim();
+  if (match) return match[1].trim();
+  const shared = tokenFromClaudeSettings();
+  if (shared) return shared;
+  throw new Error(
+    'No Figma token. Any one of these, nearest first:\n' +
+    '  FIGMA_TOKEN in the environment\n' +
+    '  figma.tokenPath inside figma.configFile, in .claude/rulebook.json\n' +
+    '  FIGMA_TOKEN in .env here\n' +
+    '  "env": { "FIGMA_TOKEN": "..." } in ~/.claude/settings.json, which covers\n' +
+    '  every project at once and is also how an agent gets it as a variable.',
+  );
 }
 
 async function fetchNodes(token, ids) {
