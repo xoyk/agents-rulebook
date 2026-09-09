@@ -426,6 +426,58 @@ function textMatchesGround(node, ancestry, frame, found) {
   }
 }
 
+/*
+ * Fault 5 — a section that stopped covering its own content.
+ *
+ * A Figma section does not clip and does not grow: content added inside simply
+ * hangs past its edge, still visible on the canvas and still perfectly readable
+ * in a screenshot of the node itself. What breaks is everything that treats the
+ * section as the boundary — an export, a promotion, a link to "the section" —
+ * and the first person to notice is whoever opens the file and sees frames
+ * lying outside the box.
+ *
+ * The audit was blind to it by construction, not by oversight: given a section
+ * it audits each child frame under its own name (see main), so the container's
+ * own geometry was the one thing nothing ever looked at. On 9 September 2026 a
+ * new assembly made a shelf taller and pushed the content 854 px past the
+ * bottom of `Components · Office chrome`; the audit called the section clean,
+ * and it was the owner who spotted it — for at least the second time.
+ *
+ * Half a pixel of slack, because widths and positions are floats and a frame
+ * flush with the edge is deliberate, not a fault.
+ */
+function contentOutsideSection(section, found) {
+  const box = section.absoluteBoundingBox;
+  if (!box) return;
+  const SLACK = 0.5;
+  for (const child of section.children ?? []) {
+    const b = child.absoluteBoundingBox;
+    if (!b) continue;
+    const over = {
+      left: box.x - b.x,
+      top: box.y - b.y,
+      right: (b.x + b.width) - (box.x + box.width),
+      bottom: (b.y + b.height) - (box.y + box.height),
+    };
+    const sides = Object.entries(over)
+      .filter(([, px]) => px > SLACK)
+      .map(([side, px]) => `${side} by ${Math.round(px)} px`);
+    if (!sides.length) continue;
+    found.push({
+      rule: 'content outside its section',
+      frame: section.name,
+      node: label(child),
+      detail: `hangs past the section — ${sides.join(', ')}`,
+    });
+  }
+}
+
+/* Sections nest, and the audited node may be a page, a section or a frame. */
+function auditSections(node, found) {
+  if (node.type === 'SECTION') contentOutsideSection(node, found);
+  for (const child of node.children ?? []) auditSections(child, found);
+}
+
 function walk(node, ancestry, frame, found) {
   blackBoundPaints(node, frame, found);
   darkTextOffAccent(node, ancestry, frame, found);
@@ -487,6 +539,12 @@ async function main() {
 
   for (const entry of Object.values(nodes)) {
     const root = entry.document;
+    /*
+     * The container's own geometry is judged before descending: walk() is given
+     * each child under its own name, so nothing inside it can see the edge it
+     * hangs past.
+     */
+    auditSections(root, found);
     /* A section or page is a container, so audit each frame under its own name. */
     const targets = root.type === 'SECTION' || root.type === 'CANVAS' ? (root.children ?? []) : [root];
     for (const target of targets) {
