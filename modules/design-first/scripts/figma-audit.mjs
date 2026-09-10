@@ -478,10 +478,131 @@ function auditSections(node, found) {
   for (const child of node.children ?? []) auditSections(child, found);
 }
 
+/*
+ * Fault 6 — a label too close in colour to its ground to be read.
+ *
+ * Fault 4 reports text the *exact* colour of what it sits on, and fault 2 hunts
+ * dark text on the dark palette. Between them lies light text on a light ground
+ * that is not quite the same hex, and neither rule can see it. On 10 September
+ * 2026 a transcript reply rendered #f6e3c0 on a solid #ffd166 — unreadable — and
+ * the audit reported the name and the time above it (exact matches) and passed
+ * the reply itself.
+ *
+ * Judged by the WCAG contrast ratio against the nearest opaque painted ancestor,
+ * the same ground fault 4 uses. The bar is deliberately far below WCAG's 4.5:
+ * this is not an accessibility audit, it is a hunt for labels nobody can read at
+ * all. A dim hint in a dark palette sits near 3:1 on purpose; 1.6 and under is
+ * never a choice. Exact matches are left to fault 4 so one label is not reported
+ * twice.
+ */
+const channel = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const relLum = (hex) => 0.2126 * channel(parseInt(hex.slice(1, 3), 16))
+  + 0.7152 * channel(parseInt(hex.slice(3, 5), 16))
+  + 0.0722 * channel(parseInt(hex.slice(5, 7), 16));
+const contrast = (a, b) => { const [x, y] = [relLum(a), relLum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+const MIN_CONTRAST = FIGMA_CONFIG.minContrast ?? 1.6;
+
+/*
+ * What a label actually sits on. Parents are not enough: a card is often a
+ * rectangle drawn *beside* its text in the same frame, not a frame around it,
+ * and a ground read from parents alone called «Личное дело» on a cream card
+ * dark-on-dark. So at every level outward, the siblings painted below the path
+ * — earlier in the child list — are searched first, nearest first, for an
+ * opaque solid whose box holds the label; only then the parent's own fill.
+ */
+function groundOf(node, ancestry) {
+  const box = node.absoluteBoundingBox;
+  const holds = (b) => box && b && b.x <= box.x + 0.5 && b.y <= box.y + 0.5
+    && b.x + b.width >= box.x + box.width - 0.5 && b.y + b.height >= box.y + box.height - 0.5;
+  const opaque = (n) => {
+    if (n.visible === false || (n.opacity ?? 1) < 1) return null;
+    const fill = (n.fills ?? []).find((f) => f.type === 'SOLID' && f.visible !== false);
+    return fill && (fill.opacity ?? 1) === 1 ? toHex(fill.color) : null;
+  };
+  const path = [...ancestry, node];
+  for (let level = path.length - 2; level >= 0; level -= 1) {
+    const parent = path[level];
+    const child = path[level + 1];
+    const siblings = parent.children ?? [];
+    const at = siblings.indexOf(child);
+    for (let i = at - 1; i >= 0; i -= 1) {
+      const below = siblings[i];
+      /* Text is never a ground: a label stretched across a row holds its
+         neighbour's box without painting anything under it. */
+      if (below.type === 'TEXT') continue;
+      if (!holds(below.absoluteBoundingBox)) continue;
+      const hex = opaque(below);
+      if (hex) return hex;
+    }
+    const own = opaque(parent);
+    if (own) return own;
+  }
+  return null;
+}
+
+function textTooCloseToGround(node, ancestry, frame, found) {
+  if (node.type !== 'TEXT') return;
+  if (!(node.characters ?? '').trim().length) return;
+  if (isPictographic(node.characters)) return;
+  const ground = groundOf(node, ancestry);
+  if (!ground) return;
+  for (const hex of effectiveTextFills(node)) {
+    if (hex === ground) continue;            // fault 4 already says so
+    const ratio = contrast(hex, ground);
+    if (ratio >= MIN_CONTRAST) continue;
+    found.push({
+      rule: 'text too close to its ground',
+      frame,
+      node: label(node),
+      detail: `${hex} on ${ground} — contrast ${ratio.toFixed(2)}:1, under ${MIN_CONTRAST}`,
+    });
+  }
+}
+
+/*
+ * Fault 7 — an absolutely placed layer that drifted out of its instance.
+ *
+ * A component may pin a layer absolutely — an edge down the left side, a wash
+ * behind the content — with constraints meant to stretch it along. In an
+ * instance whose height differs from the component's, it does not always
+ * follow: on 10 September 2026 the 3 px edge of a transcript reply sat at
+ * y = -20 and y = -40 in two instances, so each reply's colour was drawn beside
+ * the reply above it. Nothing on the canvas looked broken — just the wrong
+ * colours in the wrong places — and it was found by a script walking the file.
+ *
+ * Reported per instance, with the overhang, so the fix lands on the component:
+ * the cure is structural (a stroke on the frame itself instead of a pinned
+ * rectangle), not a nudge on every copy.
+ */
+function driftedAbsoluteLayers(node, frame, found) {
+  if (node.type !== 'INSTANCE') return;
+  const box = node.absoluteBoundingBox;
+  if (!box) return;
+  for (const child of node.children ?? []) {
+    if (child.layoutPositioning !== 'ABSOLUTE' || child.visible === false) continue;
+    const b = child.absoluteBoundingBox;
+    if (!b) continue;
+    const sides = [
+      ['top', box.y - b.y], ['left', box.x - b.x],
+      ['bottom', (b.y + b.height) - (box.y + box.height)],
+      ['right', (b.x + b.width) - (box.x + box.width)],
+    ].filter(([, px]) => px > 0.5).map(([side, px]) => `${side} by ${Math.round(px)} px`);
+    if (!sides.length) continue;
+    found.push({
+      rule: 'layer drifted out of its instance',
+      frame,
+      node: `${label(child)} in ${node.name}`,
+      detail: `pinned layer hangs outside the instance — ${sides.join(', ')}`,
+    });
+  }
+}
+
 function walk(node, ancestry, frame, found) {
   blackBoundPaints(node, frame, found);
   darkTextOffAccent(node, ancestry, frame, found);
   textMatchesGround(node, ancestry, frame, found);
+  textTooCloseToGround(node, ancestry, frame, found);
+  driftedAbsoluteLayers(node, frame, found);
   staleBaseFill(node, frame, found);
   const nextAncestry = [...ancestry, node];
   for (const child of node.children ?? []) walk(child, nextAncestry, frame, found);
