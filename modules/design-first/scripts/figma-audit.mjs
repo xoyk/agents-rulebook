@@ -402,17 +402,18 @@ function textMatchesGround(node, ancestry, frame, found) {
    * behind `Checked today` on an account card, say — carries the same hex as
    * the text on top of it and is exactly what a chip in an accent colour is
    * supposed to look like. Reading the hex alone reported four of those.
+   * groundOf keeps that: it only ever returns a fill at full opacity.
+   *
+   * The ground is groundOf's, not the nearest painted ancestor's. Ancestors
+   * alone miss a shape drawn *beside* the label in the same frame, and that is
+   * how buttons are drawn: on 11 September 2026 this rule reported eight
+   * labels of the gamepad schematic on Prod — Y X B A, LT RT LB RB — as
+   * #2c1e15 on #2c1e15, when every one sat on its own yellow or tan button and
+   * read perfectly. Fault 6 had been moved to groundOf for exactly this reason
+   * and this rule was left behind, so the two judged one label against two
+   * different grounds.
    */
-  const ground =
-    ancestry
-      .map((ancestor) => {
-        const fill = (ancestor.fills ?? []).find(
-          (f) => f.type === 'SOLID' && f.visible !== false,
-        );
-        return fill && (fill.opacity ?? 1) === 1 ? toHex(fill.color) : null;
-      })
-      .reverse()
-      .find(Boolean) ?? null;
+  const ground = groundOf(node, ancestry);
   if (!ground) return;
 
   for (const hex of effectiveTextFills(node)) {
@@ -544,8 +545,17 @@ const MIN_CONTRAST = FIGMA_CONFIG.minContrast ?? 1.6;
  */
 function groundOf(node, ancestry) {
   const box = node.absoluteBoundingBox;
-  const holds = (b) => box && b && b.x <= box.x + 0.5 && b.y <= box.y + 0.5
-    && b.x + b.width >= box.x + box.width - 0.5 && b.y + b.height >= box.y + box.height - 0.5;
+  /*
+   * Two pixels of slack, not half of one. A text box carries its line height
+   * above and below the glyphs, so a box that overhangs its pill by a pixel has
+   * letters sitting well inside it. On 11 September 2026 «LB» and «RB» on the
+   * gamepad schematic were 76×16 boxes one pixel below 76×16 pills; at half a
+   * pixel the pill was refused, the search fell through to the frame, and two
+   * readable labels were reported as dark on dark.
+   */
+  const SLACK = 2;
+  const holds = (b) => box && b && b.x <= box.x + SLACK && b.y <= box.y + SLACK
+    && b.x + b.width >= box.x + box.width - SLACK && b.y + b.height >= box.y + box.height - SLACK;
   const opaque = (n) => {
     if (n.visible === false || (n.opacity ?? 1) < 1) return null;
     const fill = (n.fills ?? []).find((f) => f.type === 'SOLID' && f.visible !== false);
