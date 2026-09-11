@@ -191,7 +191,18 @@ the page must agree to the byte, so no copies of that code.
 node <skill>/scripts/sync-rulebook.mjs --all        # walk the registry
 node <skill>/scripts/sync-rulebook.mjs --diff       # this repository, with diffs
 node <skill>/scripts/sync-rulebook.mjs --apply      # take 'update' and 'new'
+node <skill>/scripts/sync-rulebook.mjs --offline    # skip the check against origin
 ```
+
+**Every run first says where this checkout stands against its own remote.** The
+verdicts below are computed against `HEAD` of this clone, so a clone left behind
+does not fail — it reports every recipient as being in step with a canon nobody
+else is using. That is a false all clear, and it is worse than an error, because
+nothing about it looks wrong. A behind checkout is therefore reported, makes the
+exit code non-zero, and prints the `git -C … pull` that fixes it; local edits to
+the canon and unpushed commits are named too. When the check cannot run — offline,
+no remote — the line says the question could not be asked rather than staying
+silent, because silence would read as "up to date".
 
 There is no broadcast and there will not be one. The canon does not know its
 copies; the copies know their stamp, so the pulling side is always the one that
