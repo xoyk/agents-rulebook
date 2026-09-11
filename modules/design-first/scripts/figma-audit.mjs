@@ -597,12 +597,71 @@ function driftedAbsoluteLayers(node, frame, found) {
   }
 }
 
+/*
+ * Fault 8 — a label cut off by the frame that clips it.
+ *
+ * A frame with clipsContent hides whatever hangs past its edge, and a label
+ * that grew by a line — a longer word, a wrap at a new width — simply loses
+ * its tail without any sign on the canvas that more was there. On 11 September
+ * 2026 the gallery of desk trinkets was promoted to Prod with «на левом»
+ * under three things and «краю» clipped away, and the audit called it clean:
+ * no rule looked at text against the box that actually shows it.
+ *
+ * The nearest clipping ancestor is the one that matters. The slack is four
+ * pixels, not half of one: a text box carries its line height below the last
+ * baseline, and a label whose box pokes two or three pixels past a tight row
+ * shows every letter. Measured on the first run — every overhang under four was
+ * that leading, and the one real cut was twelve.
+ */
+const CLIP_SLACK = 4;
+function textClippedByFrame(node, ancestry, frame, found) {
+  if (node.type !== 'TEXT' || node.visible === false) return;
+  if (!(node.characters ?? '').trim().length) return;
+  /* A switched-off row keeps its text visible inside a hidden parent: the
+     first run of this rule reported every unused brief row on the page. */
+  if (ancestry.some((a) => a.visible === false)) return;
+  /* A frame that stands for a scrolled list is clipped on purpose, and says so
+     in its name — «прокручивается», «scrolls». That name is the convention;
+     without it every panel mock-up with a long list would block its promotion. */
+  const SCROLLS = /прокручива|scroll/i;
+  const clip = [...ancestry].reverse().find((a) => a.clipsContent && a.absoluteBoundingBox);
+  if (clip && SCROLLS.test(clip.name ?? '')) return;
+  const box = node.absoluteBoundingBox;
+  if (!clip || !box) return;
+  /* absoluteRenderBounds would be the natural measure and is useless here: the
+     API returns it already clipped by the frame, so the probe built to fail —
+     «краю» twelve pixels past a clipping row — passed with it. The box is kept,
+     and only its width is corrected to the ink: a fixed-width label wider than
+     its words overflows on paper and shows every letter. The files this audits
+     are set in a monospace face, so the longest line times ~0.62 em is the ink. */
+  const size = node.style?.fontSize ?? 12;
+  const longest = Math.max(...(node.characters ?? '').split('\n').map((l) => l.length));
+  const ink = Math.min(box.width, longest * size * 0.62);
+  const align = node.style?.textAlignHorizontal ?? 'LEFT';
+  const inkX = align === 'RIGHT' ? box.x + box.width - ink : align === 'CENTER' ? box.x + (box.width - ink) / 2 : box.x;
+  const b = { x: inkX, y: box.y, width: ink, height: box.height };
+  const c = clip.absoluteBoundingBox;
+  const sides = [
+    ['top', c.y - b.y], ['left', c.x - b.x],
+    ['bottom', (b.y + b.height) - (c.y + c.height)],
+    ['right', (b.x + b.width) - (c.x + c.width)],
+  ].filter(([, px]) => px > CLIP_SLACK).map(([side, px]) => `${side} by ${Math.round(px)} px`);
+  if (!sides.length) return;
+  found.push({
+    rule: 'text clipped by its frame',
+    frame,
+    node: label(node),
+    detail: `cut off by «${clip.name}» — ${sides.join(', ')}`,
+  });
+}
+
 function walk(node, ancestry, frame, found) {
   blackBoundPaints(node, frame, found);
   darkTextOffAccent(node, ancestry, frame, found);
   textMatchesGround(node, ancestry, frame, found);
   textTooCloseToGround(node, ancestry, frame, found);
   driftedAbsoluteLayers(node, frame, found);
+  textClippedByFrame(node, ancestry, frame, found);
   staleBaseFill(node, frame, found);
   const nextAncestry = [...ancestry, node];
   for (const child of node.children ?? []) walk(child, nextAncestry, frame, found);
