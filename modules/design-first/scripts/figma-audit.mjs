@@ -472,9 +472,41 @@ function contentOutsideSection(section, found) {
   }
 }
 
+/*
+ * Fault 9 — a section still wearing the fill Figma gives a new one.
+ *
+ * `figma.createSection()` and the toolbar both hand out a section painted plain
+ * white, bound to nothing. A section drawn by a script is born like that, and
+ * unless the script copies its neighbours' fill it stays like that — every other
+ * rule here looks at what is inside a section, so nothing noticed. On
+ * 11 September 2026 a WIP section went to review white among nine sections bound
+ * to `doc/bg/section`, the audit called it clean with twelve frames inside, and
+ * it was the owner who asked why it looked different.
+ *
+ * Judged without the neighbours: the REST call returns only the node that was
+ * asked for, so a section cannot be compared with its siblings here. What it can
+ * be judged by is the default's own signature — solid #ffffff at full opacity
+ * with no variable behind it. A project that wants white sections binds them to
+ * a token, and a bound paint is never reported.
+ */
+function defaultSectionFill(section, found) {
+  const fill = (section.fills ?? []).find((f) => f.type === 'SOLID' && f.visible !== false);
+  if (!fill || fill.boundVariables?.color) return;
+  if (toHex(fill.color) !== '#ffffff' || (fill.opacity ?? 1) < 1) return;
+  found.push({
+    rule: 'section in the default fill',
+    frame: section.name,
+    node: label(section),
+    detail: "unbound #ffffff — the fill a new section is born with; copy the neighbours' fill",
+  });
+}
+
 /* Sections nest, and the audited node may be a page, a section or a frame. */
 function auditSections(node, found) {
-  if (node.type === 'SECTION') contentOutsideSection(node, found);
+  if (node.type === 'SECTION') {
+    contentOutsideSection(node, found);
+    defaultSectionFill(node, found);
+  }
   for (const child of node.children ?? []) auditSections(child, found);
 }
 
