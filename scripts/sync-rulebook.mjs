@@ -25,6 +25,7 @@
  *   node <skill>/scripts/sync-rulebook.mjs --all        # every recipient
  *   node <skill>/scripts/sync-rulebook.mjs --diff       # show the canon diffs
  *   node <skill>/scripts/sync-rulebook.mjs --apply      # write update/new sections
+ *   node <skill>/scripts/sync-rulebook.mjs --offline    # skip the fetch against origin
  *
  * Exit code is 1 when any recipient has something to look at, so it can gate a
  * hook or a scheduled run.
@@ -59,6 +60,7 @@ const args = process.argv.slice(2);
 const all = args.includes("--all");
 const wantDiff = args.includes("--diff");
 const apply = args.includes("--apply");
+const offline = args.includes("--offline");
 
 const ANCHOR = /^<!-- (rule|local):([a-z0-9-]+) -->$/gm;
 
@@ -80,6 +82,37 @@ function git(...argv) {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"], // a missing path at a revision is an answer, not noise
   });
+}
+
+/**
+ * Where this clone of the canon stands against its own remote.
+ *
+ * Everything below compares projects against `HEAD` of this checkout, so a
+ * checkout left behind does not produce an error — it produces a false all
+ * clear. Every recipient is then faithfully in step with a canon nobody else is
+ * using, which is the one failure mode this tool exists to remove.
+ *
+ * Three outcomes, and the third matters as much as the first: `null` means the
+ * question could not be asked, and it is reported as such. Silence must never
+ * read as "up to date", because that is the same lie in a quieter voice.
+ */
+function canonStanding() {
+  try {
+    execFileSync("git", ["-C", SKILL_ROOT, "fetch", "--quiet", "origin"], {
+      timeout: 5000,
+      stdio: "ignore",
+    });
+  } catch {
+    return null; // offline, no remote, or a fetch that hung — unknown, not fine
+  }
+  try {
+    const behind = Number(git("rev-list", "--count", "HEAD..@{u}").trim());
+    const ahead = Number(git("rev-list", "--count", "@{u}..HEAD").trim());
+    const dirty = git("status", "--porcelain", "--", ".").trim().length > 0;
+    return { behind, ahead, dirty };
+  } catch {
+    return null; // no upstream configured
+  }
 }
 
 /** The canon's sections as of a revision. Missing files at that revision are skipped. */
@@ -200,6 +233,31 @@ const WRITABLE = new Set(["update", "new"]);
 
 const targets = all ? recipients() : [process.cwd()];
 let anything = false;
+
+const standing = offline ? null : canonStanding();
+if (standing === null) {
+  console.log(
+    offline
+      ? "canon: not checked against origin (--offline)\n"
+      : "canon: could not be checked against origin — treat these verdicts as provisional\n",
+  );
+} else {
+  const notes = [];
+  if (standing.behind) {
+    notes.push(`${standing.behind} commit(s) behind origin — pull before trusting these verdicts`);
+  }
+  if (standing.dirty) {
+    notes.push("uncommitted changes in the checkout — this canon is one nobody else has");
+  }
+  if (standing.ahead && !standing.behind) {
+    notes.push(`${standing.ahead} commit(s) ahead of origin — unpushed canon`);
+  }
+  if (notes.length) {
+    console.log(`canon: ${notes.join("; ")}`);
+    console.log(`  git -C ${SKILL_ROOT.replace(homedir(), "~")} pull\n`);
+    if (standing.behind) anything = true;
+  }
+}
 
 for (const root of targets) {
   const short = root.replace(homedir(), "~");
