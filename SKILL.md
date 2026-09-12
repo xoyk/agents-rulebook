@@ -168,6 +168,38 @@ Two hooks keep the page from falling behind the file, and both are installed her
   any editor and any agent, not only Claude. Git does not version hooks, so once
   per clone: `git config core.hooksPath .githooks`.
 
+  Install it as written, both guards included:
+
+  ```sh
+  #!/bin/sh
+  set -e
+  if git diff --cached --name-only --diff-filter=d | grep -qx 'AGENTS.md'; then
+    R="$HOME/.claude/skills/agents-init/scripts/render-rulebook.mjs"
+    if [ -f "$R" ]; then
+      node "$R"
+      git check-ignore -q .claude/rulebook.html || git add .claude/rulebook.html
+    else
+      echo "pre-commit: agents-init skill not found; the rulebook page was not rebuilt" >&2
+    fi
+  fi
+  ```
+
+  Both guards were paid for on 4 September 2026, the day one project took its
+  rulebook out of git. **`--diff-filter=d`**: the merge that carried the file
+  out staged its deletion, the hook rebuilt the page from a file that was
+  leaving, and `set -e` killed the commit. A deletion is not an edit; there is
+  nothing to keep in sync with a file going away. **`check-ignore`**: `git add`
+  on an ignored path fails, and the page was ignored now. The question is "is it
+  ignored?", not "is it tracked?" — a project keeping the rulebook in git must
+  still be able to add the page on the first commit, before it is tracked.
+  Where the page is ignored it is still rebuilt, so the local copy stays
+  current; it is only not staged. `git add -f` is the wrong way out: it commits
+  a file the project decided not to carry.
+
+  Which of the two a project is — rulebook in git or out of it — is its own
+  call, and the files go together either way: `AGENTS.md`, `CLAUDE.md`, the
+  stamp and the page. The README says why a subset lies.
+
 Neither hook touches the stamp. A section that differs from the stamp is the
 `ours` signal for sync; updating the stamp on every commit would erase it.
 
