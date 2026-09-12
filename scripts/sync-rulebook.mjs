@@ -25,6 +25,9 @@
  *   node <skill>/scripts/sync-rulebook.mjs --all        # every recipient
  *   node <skill>/scripts/sync-rulebook.mjs --diff       # show the canon diffs
  *   node <skill>/scripts/sync-rulebook.mjs --apply      # write update/new sections
+ *   node <skill>/scripts/sync-rulebook.mjs --html       # every recipient, drawn as a map:
+ *                                                       # ~/.config/agents-rulebook/sync.html
+ *   node <skill>/scripts/sync-rulebook.mjs --html --out <path>
  *   node <skill>/scripts/sync-rulebook.mjs --offline    # skip the fetch against origin
  *
  * Exit code is 1 when any recipient has something to look at, so it can gate a
@@ -32,10 +35,11 @@
  */
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { readFileSync, writeFileSync, existsSync, lstatSync, mkdirSync } from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { moduleOf as moduleOfCanonical } from "./lib/sections.mjs";
+import { headingOf, moduleOf as moduleOfCanonical } from "./lib/sections.mjs";
+import { renderSyncPage } from "./lib/sync-page.mjs";
 import { homedir } from "node:os";
 
 const SKILL_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -61,6 +65,8 @@ const all = args.includes("--all");
 const wantDiff = args.includes("--diff");
 const apply = args.includes("--apply");
 const offline = args.includes("--offline");
+const html = args.includes("--html");
+const outPath = args.includes("--out") ? args[args.indexOf("--out") + 1] : null;
 
 const ANCHOR = /^<!-- (rule|local):([a-z0-9-]+) -->$/gm;
 
@@ -203,7 +209,7 @@ function examine(root) {
     else if (localMoved) rows.push({ id, verdict: "ours" });
   }
 
-  return { root, stamp, rows };
+  return { root, stamp, rows, mine, head };
 }
 
 const moduleOf = (id) => moduleOfCanonical(id) ?? "core";
@@ -231,7 +237,9 @@ const LABEL = {
 const ACTIONABLE = new Set(["update", "conflict", "new"]);
 const WRITABLE = new Set(["update", "new"]);
 
-const targets = all ? recipients() : [process.cwd()];
+// The map is about every copy at once, so --html reads the whole registry.
+const targets = all || html ? recipients() : [process.cwd()];
+const seen = [];
 let anything = false;
 
 const standing = offline ? null : canonStanding();
@@ -263,9 +271,11 @@ for (const root of targets) {
   const short = root.replace(homedir(), "~");
   if (!existsSync(root)) {
     console.log(`${short}\n  not on this machine — skipped\n`);
+    seen.push({ root, short, missing: true });
     continue;
   }
   const r = examine(root);
+  seen.push({ root, short, r });
   if (r.error) {
     console.log(`${short}\n  ${r.error}\n`);
     anything = true;
@@ -307,8 +317,77 @@ for (const root of targets) {
       const now = canonAt("HEAD")[id];
       console.log(unified(base?.body ?? "", now?.body ?? "").replace(/^/gm, "  "));
     }
+    // What an offer would carry: this copy's text against the canon's, so a
+    // section can be read before it is proposed upstream — or kept local.
+    for (const id of groups.ours ?? []) {
+      console.log(`\n  --- ${id}: canon ${head} → this copy ---`);
+      console.log(unified(r.head[id]?.body ?? "", r.mine[id]?.body ?? "").replace(/^/gm, "  "));
+    }
   }
   console.log();
+}
+
+if (html) writeMap();
+
+/** A section's heading as plain text, for a card to name it by. */
+function titleOf(body) {
+  return headingOf(body || "").title?.replace(/[*`]/g, "").trim() || null;
+}
+
+/**
+ * Where each worktree of a project stands against the project's own copy.
+ * A tracked AGENTS.md travels with branches, so its worktrees are not copies at
+ * all and there is nothing to refresh; an ignored one is copied once, when the
+ * tree is made, and goes stale from that moment.
+ */
+function worktreesOf(root) {
+  const run = (...a) => execFileSync("git", ["-C", root, ...a], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+  let porcelain;
+  try { porcelain = run("worktree", "list", "--porcelain"); } catch { return { tracked: false, list: [] }; }
+  let tracked = false;
+  try { tracked = run("ls-files", "--", "AGENTS.md").trim().length > 0; } catch { /* not a checkout */ }
+  const own = existsSync(join(root, "AGENTS.md")) ? readFileSync(join(root, "AGENTS.md"), "utf8") : null;
+  const list = [];
+  for (const block of porcelain.split("\n\n").filter(Boolean).slice(1)) {
+    const dir = block.split("\n")[0].slice("worktree ".length);
+    if (!existsSync(dir)) continue; // a tree git remembers and the disk does not
+    const path = join(dir, "AGENTS.md");
+    let state = "missing";
+    try {
+      if (lstatSync(path).isSymbolicLink()) state = "linked";
+      else state = readFileSync(path, "utf8") === own ? "fresh" : "stale";
+    } catch { /* no file: missing */ }
+    list.push({ name: basename(dir), path: dir.replace(homedir(), "~"), state });
+  }
+  return { tracked, list };
+}
+
+function writeMap() {
+  const skillPath = SKILL_ROOT.replace(homedir(), "~");
+  const safe = (...a) => { try { return git(...a).trim(); } catch { return ""; } };
+  const url = safe("remote", "get-url", "origin");
+  const name = (/[:/]([^/:]+\/[^/]+?)(?:\.git)?$/.exec(url) || [])[1] || url || "no remote";
+  const commits = (range) => safe("log", "--format=%h%x09%s", range).split("\n").filter(Boolean)
+    .map((l) => { const [sha, ...rest] = l.split("\t"); return { sha, subject: rest.join("\t") }; });
+  const projects = seen.map(({ root, short, r, missing }) => {
+    const p = { name: basename(root), path: short };
+    if (missing) return { ...p, missing: true };
+    if (r.error) return { ...p, error: r.error };
+    const rows = r.rows.map((row) => ({ ...row, title: titleOf(r.mine[row.id]?.body ?? r.head[row.id]?.body) }));
+    return { ...p, stamp: r.stamp, rows, trees: worktreesOf(root) };
+  });
+  const d = new Date();
+  const checkedAt = `${d.getDate()} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()]} ${d.getFullYear()}, ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const page = renderSyncPage({
+    checkedAt, skillPath, projects,
+    canon: { name, visibility: url.includes("github.com") ? "github.com" : "remote",
+      head: safe("rev-parse", "--short", "@{u}"), cloneHead: safe("rev-parse", "--short", "HEAD"), clonePath: skillPath,
+      standing, aheadCommits: standing?.ahead ? commits("@{u}..HEAD") : [], behindCommits: standing?.behind ? commits("HEAD..@{u}") : [] },
+  });
+  const out = outPath ? resolve(outPath) : join(dirname(REGISTRY), "sync.html");
+  mkdirSync(dirname(out), { recursive: true });
+  writeFileSync(out, page);
+  console.log(`map: ${out.replace(homedir(), "~")}`);
 }
 
 /**
