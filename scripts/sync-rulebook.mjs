@@ -338,7 +338,9 @@ function titleOf(body) {
  * Where each worktree of a project stands against the project's own copy.
  * A tracked AGENTS.md travels with branches, so its worktrees are not copies at
  * all and there is nothing to refresh; an ignored one is copied once, when the
- * tree is made, and goes stale from that moment.
+ * tree is made, and goes stale from that moment. A link is reported as its own
+ * state and drawn as broken: Claude Code will not load it (refresh-worktree.mjs
+ * says why).
  */
 function worktreesOf(root) {
   const run = (...a) => execFileSync("git", ["-C", root, ...a], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });

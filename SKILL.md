@@ -200,8 +200,31 @@ Two hooks keep the page from falling behind the file, and both are installed her
   call, and the files go together either way: `AGENTS.md`, `CLAUDE.md`, the
   stamp and the page. The README says why a subset lies.
 
-Neither hook touches the stamp. A section that differs from the stamp is the
-`ours` signal for sync; updating the stamp on every commit would erase it.
+- **Worktree refresh — only where the rulebook is out of git.** Git no longer
+  carries it into worktrees, so each holds a copy, and a copy goes stale. Two
+  hooks in the user's `~/.claude/settings.json` (not the project's: they must
+  reach worktrees whose own settings are an old copy too) run
+  `scripts/refresh-worktree.mjs`. One fans an edit of the project's
+  `AGENTS.md` out to every worktree; the other refreshes a worktree when a
+  session starts in it, and tells the session to re-read the file if it had to
+  replace it. Check first that the user's settings do not already carry them.
+
+  ```json
+  {"hooks":{
+    "SessionStart":[{"hooks":[{"type":"command","timeout":20,
+      "command":"R=\"$HOME/.claude/skills/agents-init/scripts/refresh-worktree.mjs\"; if [ -f \"$R\" ]; then node \"$R\" --hook; else true; fi"}]}],
+    "PostToolUse":[{"matcher":"Edit|Write","hooks":[{"type":"command","timeout":20,
+      "command":"IN=$(cat); case \"$IN\" in *AGENTS.md*|*CLAUDE.md*|*rulebook.json*) R=\"$HOME/.claude/skills/agents-init/scripts/refresh-worktree.mjs\"; if [ -f \"$R\" ]; then printf \"%s\" \"$IN\" | node \"$R\" --hook; fi;; esac; true"}]}]}}
+  ```
+
+  **Never link a worktree's `AGENTS.md` to the project's copy instead.** Claude
+  Code does not load an instruction file that resolves outside its project; on
+  12 September 2026 seventeen worktrees were linked, and the next session in
+  one of them started with no rulebook at all. The README has the measurements.
+
+None of these hooks touches the project's stamp. A section that differs from
+the stamp is the `ours` signal for sync; updating the stamp on every commit
+would erase it.
 
 ### 8. Say what comes next
 
@@ -294,9 +317,11 @@ each copy live and which way does a change travel", which the text never showed
 without walking it by hand.
 
 Worktrees get a column of their own because they are the copies the registry
-cannot see. A worktree's `AGENTS.md` is a symlink to its project's copy, a stale
-duplicate of it, or missing, and the page says which — unless git tracks the
-file, in which case each tree follows its own branch and that is not drift.
+cannot see. A worktree's `AGENTS.md` is a fresh copy of its project's, a stale
+one, a link, or missing, and the page says which — unless git tracks the file,
+in which case each tree follows its own branch and that is not drift. A link is
+drawn as broken, not as current: Claude Code will not load it. The refresh
+arrow carries the command that fixes all of them, `refresh-worktree.mjs --all`.
 
 The page is written to `~/.config/agents-rulebook/sync.html`, next to the
 registry and never into a repository: it names the directories on this machine,
