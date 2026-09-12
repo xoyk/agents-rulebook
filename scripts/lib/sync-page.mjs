@@ -195,22 +195,27 @@ export function renderSyncPage(data) {
       trees = `<div class="trees"><h4>${plural(t.list.length, "worktree")}</h4><div class="dim">tracked by git — each follows its own branch</div></div>`;
     } else {
       const n = (s) => t.list.filter((x) => x.state === s).length;
+      // A link counts as broken, not as current: Claude Code does not load an
+      // instruction file that resolves outside its project, so a session in a
+      // linked worktree starts with no rulebook at all.
       const linked = n("linked"), fresh = n("fresh"), stale = n("stale"), missing = n("missing");
+      const behind = linked + stale + missing;
       const total = t.list.length;
       const seg = (k, c) => (k ? `<b style="flex:${k};background:var(--${c})"></b>` : "");
-      const shown = t.list.filter((x) => x.state !== "linked" && x.state !== "fresh").slice(0, 2);
+      const shown = t.list.filter((x) => x.state !== "fresh").slice(0, 2);
       const rest = total - shown.length;
-      trees = `<div class="trees"><h4>${plural(total, "worktree")}</h4><div class="bar">${seg(linked + fresh, "take")}${seg(stale, "offer")}${seg(missing, "quiet")}</div>
-<div class="dim">${[linked && `${linked} linked`, fresh && `${fresh} fresh`, stale && `${stale} stale copies`, missing && `${missing} missing`].filter(Boolean).join(" · ")}</div>
-${shown.map((x) => `<div class="row"><span class="mono">${esc(x.name)}</span><span class="k-${x.state === "stale" ? "offer" : "quiet"}">${esc(x.state)}</span></div>`).join("")}
+      trees = `<div class="trees"><h4>${plural(total, "worktree")}</h4><div class="bar">${seg(fresh, "take")}${seg(stale + linked, "offer")}${seg(missing, "quiet")}</div>
+<div class="dim">${[fresh && `${fresh} fresh`, stale && `${stale} stale copies`, linked && `${linked} links, not loaded`, missing && `${missing} missing`].filter(Boolean).join(" · ")}</div>
+${shown.map((x) => `<div class="row"><span class="mono">${esc(x.name)}</span><span class="k-${x.state === "missing" ? "quiet" : "offer"}">${esc(x.state)}</span></div>`).join("")}
 ${rest > 0 && shown.length ? `<div class="dim">+${rest} more</div>` : ""}</div>`;
-      if (stale + missing) {
-        tf = flow("refresh", `refresh ${stale + missing} →`, "right", `d-${key}-refresh`);
+      if (behind) {
+        tf = flow("refresh", `refresh ${behind} →`, "right", `d-${key}-refresh`);
         details.push(detail(`d-${key}-refresh`, { title: `${p.name} → its worktrees`, kind: "refresh",
-          kindText: `refresh · ${plural(stale + missing, "worktree")} behind the project copy`,
-          why: "The rulebook is not tracked by git here, so a worktree carries a copy made when it was created. A link to the project copy never goes stale.",
-          items: t.list.filter((x) => x.state === "stale" || x.state === "missing").map((x) => ({ title: x.name, sub: x.path, tag: x.state, kind: x.state === "stale" ? "offer" : "quiet" })) }));
-      } else tf = `<span class="flow still k-take"><span>${linked === total ? "linked" : "fresh"}</span></span>`;
+          kindText: `refresh · ${plural(behind, "worktree")} behind the project copy`,
+          why: "The rulebook is not tracked by git here, so a worktree carries a copy made when it was created, and the copy goes stale. A link is no way out: Claude Code does not load an instruction file that resolves outside the project. refresh-worktree.mjs, run as a SessionStart hook, keeps each copy current.",
+          items: t.list.filter((x) => x.state !== "fresh").map((x) => ({ title: x.name, sub: x.path, tag: x.state, kind: x.state === "missing" ? "quiet" : "offer" })),
+          commandTitle: "Refresh them now", command: `cd ${p.path} && node ${data.skillPath}/scripts/refresh-worktree.mjs --all` }));
+      } else tf = `<span class="flow still k-take"><span>fresh</span></span>`;
     }
     return at(5, card) + at(4, `<div class="flows">${f}</div>`) + at(6, `<div class="flows">${tf}</div>`) + at(7, trees);
   }).join("\n");
