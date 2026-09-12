@@ -192,6 +192,7 @@ node <skill>/scripts/sync-rulebook.mjs --all        # walk the registry
 node <skill>/scripts/sync-rulebook.mjs --diff       # this repository, with diffs
 node <skill>/scripts/sync-rulebook.mjs --apply      # take 'update' and 'new'
 node <skill>/scripts/sync-rulebook.mjs --offline    # skip the check against origin
+node <skill>/scripts/sync-rulebook.mjs --html       # the registry as a page
 ```
 
 **Every run first says where this checkout stands against its own remote.** The
@@ -248,6 +249,28 @@ Dropping a section is an override too: a module that arrived whole and lost two
 sections should say which and why, or the next reader cannot tell a decision
 from an accident. The rule about precedence lives in the template's tail —
 `<!-- rule:canon-precedence -->`.
+
+### The map
+
+`--html` walks the registry and draws it as one page: the canon on its remote,
+this clone, every recipient with its stamp, and the worktrees under each. Arrows
+between them carry the verdicts — `take` from the clone, `offer` back to it,
+`conflict`, `publish` from the clone to the remote — and each arrow opens the
+list of sections behind it and the command that would act on it. The text
+report answers "what is wrong with this copy"; the page answers "where does
+each copy live and which way does a change travel", which the text never showed
+without walking it by hand.
+
+Worktrees get a column of their own because they are the copies the registry
+cannot see. A worktree's `AGENTS.md` is a symlink to its project's copy, a stale
+duplicate of it, or missing, and the page says which — unless git tracks the
+file, in which case each tree follows its own branch and that is not drift.
+
+The page is written to `~/.config/agents-rulebook/sync.html`, next to the
+registry and never into a repository: it names the directories on this machine,
+and those are nobody else's business. It is read-only — no script, the details
+open by fragment — so opening it acts on nothing. `--out <path>` puts it
+elsewhere.
 
 **The way back is only ever taken on an explicit word.** `ours` is not a reason
 to act, and the exit code stays zero on it. A rule derived from somebody else's
