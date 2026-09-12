@@ -39,6 +39,52 @@ Rules:
   but it must run before the commit leaves this machine. Fixing a rejected
   trailer that is already published costs a force-push.
 
+<!-- rule:release-pictures -->
+## A visible change ships with its picture
+
+**If a feature can be seen and the project can take its own screenshots, the
+release note carries a picture of it — taken from invented data.** Not a picture
+someone remembers to add: the note declares a recipe (where to go, what to
+press), a script renders it against a demo build seeded with made-up people,
+projects and numbers, and the release refuses a note that promised a picture and
+has none. The rule on invented data under *Publishing* applies in full: a
+release note is a public page.
+
+A feature with nothing to photograph says so, in the note itself:
+
+```text
+{{no-picture field}}: <why — e.g. "a message printed in the terminal">
+```
+
+and the release refuses a note that carries **neither** a picture nor a reason.
+The reason is kept in the file, off the page: a reader of the release has no use
+for it, the next person asking "why no picture?" does.
+
+Two things decide whether the rule holds in practice:
+
+- **The recipe must be able to prepare the screen, not only walk to it.** A
+  request waiting in a dialog, a switch the owner flips, a record in an empty
+  list — if the capture tool only knows a URL and keystrokes, every feature that
+  needs state is exactly the one that ships without a picture. Give the recipe a
+  setup step that runs before the camera.
+- **The recipe is kept, the picture is disposable.** Store recipes next to the
+  pictures under the version. A recipe can be replayed on an older tag — which
+  is how a missing picture is backfilled honestly, against the version that
+  shipped the feature, and how a before/after pair is made.
+
+```bash
+{{screenshot command}}
+```
+
+13 September 2026, one project: 13 of its last 17 feature notes had gone out as
+bare text, six of them for things plainly on the screen — a new object in the
+main view, the cards of a permission dialog. Nothing asked for a picture: the
+template came with one, deleting it was the short way, and the only guard
+checked that a *declared* picture had been rendered. The capture tool could not
+put a request in the dialog, so the one feature that most needed a picture had
+no way to get one. Both were fixed in the same release, and the six were
+backfilled against their own tags.
+
 <!-- rule:release-tree -->
 ## One tree owns the release
 
