@@ -697,7 +697,17 @@ function textClippedByFrame(node, ancestry, frame, found) {
   });
 }
 
+/*
+ * A hidden layer is not on the canvas, so nothing in it can be misread. It is
+ * skipped whole, children included. On 12 September 2026 a price list built
+ * from one tier component hid the command line in two tiers of three; the
+ * audit walked into both hidden copies, found no ground on the hidden block —
+ * opaque() refuses an invisible node — fell through to the cream paper, and
+ * reported the command as light-on-light twice while the visible one, on its
+ * dark block, passed. A component shown elsewhere is judged where it shows.
+ */
 function walk(node, ancestry, frame, found) {
+  if (node.visible === false) return;
   blackBoundPaints(node, frame, found);
   darkTextOffAccent(node, ancestry, frame, found);
   textMatchesGround(node, ancestry, frame, found);
