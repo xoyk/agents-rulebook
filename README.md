@@ -49,6 +49,7 @@ Updating the canon on this machine is `git pull` in the skill directory — a sk
 | `scripts/stamp-rulebook.mjs` | Writes the stamp. `--basis install` for a fresh copy, `--basis adopted` for a rulebook that was not assembled here, `--check` to list sections that drifted from their stamp without writing anything. |
 | `scripts/sync-rulebook.mjs` | Compares copies with the canon and says what to do with each section; `--apply` takes the mechanical half; `--html` draws every copy on one map. |
 | `scripts/render-rulebook.mjs` | Renders `AGENTS.md` into `.claude/rulebook.html`. Deterministic, so `--check` is a byte compare. `--hook` is the mode the editor hook calls. |
+| `scripts/refresh-worktree.mjs` | Keeps a worktree's copy of an out-of-git rulebook current. Run from two Claude Code hooks; `--all` refreshes every worktree of a repository by hand. See [Worktrees](#worktrees). |
 | `scripts/lib/sections.mjs` | The one reading of `AGENTS.md`: where a section starts and ends, what it is called, what it hashes to. The stamp, the sync and the page must agree to the byte, so there are no copies of this code. |
 | `scripts/lib/sync-page.mjs` | The drawing half of `sync-rulebook.mjs --html`. |
 
@@ -149,7 +150,43 @@ Parallel agents work in one worktree each, and every worktree is a copy of the r
 - **Tracked** — each worktree follows its own branch, and a stale rulebook there is a branch that has not been rebased. That is not drift, and the map does not report it.
 - **Untracked** — typical when the repository is public and the rulebook is not. Then whatever put the file into the worktree decides its fate. A copy made when the worktree was created is stale the first time the project's rulebook changes, and a worktree created with a bare `git worktree add` gets nothing at all.
 
-The map shows each untracked worktree's `AGENTS.md` as a **symlink** to its project's copy, a **stale duplicate**, or **missing**. Only the symlink stays in step by itself: an edit to the project's copy is what every worktree reads next. `CLAUDE.md` is a one-line pointer and can be a copy; `AGENTS.md` and `.claude/rulebook.json` should be links. Agents that do not understand `@` imports — Codex among them — read a linked `AGENTS.md` like any other file, which is why a link beats an import here.
+The map shows each untracked worktree's `AGENTS.md` as a **fresh** copy, a **stale** one, a **link**, or **missing**, and only a fresh copy counts as healthy.
+
+### A link does not work
+
+Linking every worktree's `AGENTS.md` to the project's copy looks like the obvious fix, and it is wrong: Claude Code does not load an instruction file that resolves outside the project it runs in. On 12 September 2026 one project linked seventeen worktrees that way, and the next session started in one of them with no rulebook at all. Measured on Claude Code 2.1.263, with a code word in the rulebook and a session asked for it:
+
+| What the worktree holds | Loaded |
+|---|---|
+| A plain file | yes |
+| A symlink to a file inside the worktree | yes |
+| A hard link | yes — until the first edit: Claude Code's Edit saves by replacing the file, and every other name keeps the old text |
+| A symlink to a file outside the worktree | no |
+| An `@/absolute/path` import in `CLAUDE.md` | no — an import from outside the project waits for an approval nobody had given |
+
+Claude Code's Edit also refuses to write through a symlink at all, and names the target instead.
+
+### Copies, kept current by two hooks
+
+So a worktree keeps a real copy, and `scripts/refresh-worktree.mjs` keeps it current. It runs from two hooks in the user's `~/.claude/settings.json` — the user's, not the project's, because a worktree's own project settings are an old copy as well:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [{ "hooks": [{ "type": "command", "timeout": 20, "command": "R=\"$HOME/.claude/skills/agents-init/scripts/refresh-worktree.mjs\"; if [ -f \"$R\" ]; then node \"$R\" --hook; else true; fi" }] }],
+    "PostToolUse": [{ "matcher": "Edit|Write", "hooks": [{ "type": "command", "timeout": 20, "command": "IN=$(cat); case \"$IN\" in *AGENTS.md*|*CLAUDE.md*|*rulebook.json*) R=\"$HOME/.claude/skills/agents-init/scripts/refresh-worktree.mjs\"; if [ -f \"$R\" ]; then printf \"%s\" \"$IN\" | node \"$R\" --hook; fi;; esac; true" }] }]
+  }
+}
+```
+
+- **After an edit of the project's own `AGENTS.md`**, every worktree gets the new text at once, so the next session anywhere starts on it. This is the hook that does most of the work.
+- **When a session starts in a worktree**, that worktree's copy is refreshed. This one cannot win the race: Claude Code loads the instructions while SessionStart hooks run, and a hook that took a second lost every time it was measured. What it does get is its output into the session's context, and that is awaited — so when it had to replace `AGENTS.md` it says so and tells the session to read the file again. A capable model did; a small one answered from the old text anyway. It catches edits the first hook never sees — made in an editor, or by `sync-rulebook.mjs --apply`.
+
+A file is written only where the project keeps it out of git: untracked and ignored in that worktree. A copy that differed is saved to `~/.config/agents-rulebook/worktree-copies/` before it is replaced, but the worktree's copy is not the place to edit the rulebook — edit the project's copy, and the hooks carry it out. To refresh every worktree of a repository by hand:
+
+```bash
+node ~/.claude/skills/agents-init/scripts/refresh-worktree.mjs --all
+```
 
 A running agent reads its instructions when its session starts, so a changed rulebook reaches a live session only when the session restarts or is told to re-read it.
 
