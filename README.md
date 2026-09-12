@@ -24,6 +24,13 @@ The repository is the skill directory, so that clone is the whole installation. 
 | `.claude/rulebook.json` | The stamp: which canon commit the file was built from, which modules, and a hash of every section by anchor. Project settings for the tools live here too. |
 | `.claude/rulebook.html` | The same agreements as one self-contained page, badged by origin and searchable. |
 
+**By default all five are committed.** `AGENTS.md` has to be in every clone and every worktree to be read at all, the page is what gets sent as a link, and the stamp describes the file next to it, so it travels with that file.
+
+**The exception is a public repository whose rulebook is private.** Then all of them go into `.gitignore` together — `AGENTS.md`, `CLAUDE.md`, `.claude/rulebook.json`, `.claude/rulebook.html`, and usually `BACKLOG.md` with them. Never only some of them: a stamp committed without its file describes a file that is not there, and a file committed without its stamp leaves every other clone unable to tell an edit here from a move of the canon. Leaving the tree has two consequences worth knowing in advance:
+
+- A worktree no longer gets the rulebook from git. Something else has to put it there, and what that is decides whether the copy stays current — see [Worktrees](#worktrees).
+- The pre-commit hook must not `git add` the page, because adding an ignored path fails and kills the commit. It asks "is the page ignored?" rather than "is it tracked?" — a project keeping the rulebook in git must still be able to add the page on the first commit, before it is tracked — and it skips commits that delete `AGENTS.md`, since there is nothing to render from a file that is leaving. Both guards were paid for on one project on 4 September 2026, the day its rulebook left the tree: the merge carrying it out staged the deletion, the hook rebuilt the page from the departing file, and the commit died. `git add -f` is the wrong way out: it commits a file the project has decided not to carry.
+
 It never overwrites an existing `AGENTS.md`. On a project that already has one, it reads it, says which parts of the template are missing, and asks. The full procedure is in `SKILL.md`.
 
 Updating the canon on this machine is `git pull` in the skill directory — a skill is read fresh on every invocation, so there is nothing to build or restart. Updating a *project* from the canon is a separate, deliberate step: see [Keeping copies in step](#keeping-copies-in-step).
