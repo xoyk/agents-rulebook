@@ -46,6 +46,18 @@ export function parseSections(text) {
   return { preamble, sections };
 }
 
+/**
+ * A section's heading: the first markdown heading after its anchor line — its
+ * position in the body, its level, and its text. The rendered page and the sync
+ * map both name sections by it, so it is read here and nowhere else.
+ */
+export function headingOf(body) {
+  const lines = body.split("\n");
+  const index = lines.findIndex((l, i) => i > 0 && /^#{1,6} /.test(l));
+  if (index < 0) return { index: -1, level: 2, title: null };
+  return { index, level: lines[index].match(/^(#+)/)[1].length, title: lines[index].replace(/^#+ /, "") };
+}
+
 export function moduleOf(id) {
   for (const [name, ids] of Object.entries(MODULE_OF)) if (ids.includes(id)) return name;
   return null;
