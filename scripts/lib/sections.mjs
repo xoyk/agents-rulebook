@@ -18,8 +18,8 @@ export const MODULE_OF = {
          "canon-precedence"],
   "design-first": ["design-first", "wip-section", "archiving", "placement",
                    "painting", "design-file-shared"],
-  release: ["release-notes", "release-tree", "build-numbers",
-            "finishing-release"],
+  release: ["release-notes", "release-pictures", "release-tree",
+            "build-numbers", "finishing-release"],
   publishing: ["publishing", "publishing-is-overwriting", "public-invented-data"],
 };
 
