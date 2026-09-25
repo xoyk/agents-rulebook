@@ -35,6 +35,9 @@ existed, and nobody had configured one either.
 ls AGENTS.md CLAUDE.md BACKLOG.md 2>/dev/null
 ```
 
+On a project that already carries a rulebook, `node <skill>/scripts/install.mjs
+--check` lists what is not wired up yet — the page, the hooks, the registry.
+
 **Never overwrite an existing `AGENTS.md`.** If there is one, read it, show the
 user which parts of the template it is missing, and ask whether to add the
 missing sections. Agreements are written in blood; somebody else's file may
@@ -91,142 +94,112 @@ the paragraph outright. A rule that stops halfway is a rule nobody follows.
 After assembling, check two things: that no `{{` remains, and that every `##`
 and `###` heading carries an anchor above it.
 
-### 4. Stamp the file
+### 4. Wire it up with one command
 
 ```bash
-node <skill>/scripts/stamp-rulebook.mjs --basis install
+node <skill>/scripts/install.mjs
 ```
 
-Writes `.claude/rulebook.json`: the template commit, the chosen modules, and a
-hash of every section by anchor. Anchors say *which* section this is; the stamp
-says *what it looked like when it arrived*. Without it, a section that differs
-from the template is ambiguous — either somebody edited it here, or the template
-moved on. Those are opposite fates, and the diff looks identical.
+Everything after assembly is the same every time, so it is a script rather than
+prose for a model to carry out. It does whatever is missing and leaves alone
+whatever is in place, so running it twice is safe:
 
-For an existing rulebook that was not assembled from here, the base is its own
-state today:
+- **The stamp**, `.claude/rulebook.json`, through `stamp-rulebook.mjs` — only
+  when there is none. For a rulebook that was not assembled here, pass
+  `--basis adopted`.
+- **`CLAUDE.md`**, exactly one line, `@AGENTS.md`, and **`BACKLOG.md`** from
+  `templates/BACKLOG.md` — only when they do not exist.
+- **The page**, `.claude/rulebook.html`, through `render-rulebook.mjs`.
+- **The Claude Code hook** that redraws the page when `AGENTS.md` is edited,
+  merged into the project's `.claude/settings.json`.
+- **The git pre-commit hook** that redraws and stages the page — only where the
+  rulebook is in git.
+- **The worktree hooks** in the user's `~/.claude/settings.json` — only where
+  the rulebook is out of git.
+- **The registry entry** in `~/.config/agents-rulebook/recipients.json`.
 
-```bash
-node <skill>/scripts/stamp-rulebook.mjs --basis adopted
-```
+It refuses to write anything while `AGENTS.md` still holds a `{{...}}` or a
+heading without an anchor: the stamp would record the blank as canon, and the
+page would publish it. Fix the file and run it again.
 
-`--check` writes nothing and says which sections have drifted from the stamp.
+Every line of its output starts with `ok`, `done`, `skip` or `hand`. **A `hand`
+line goes into the report, in `Needed from you`:** it is a step the script would
+not decide — a `CLAUDE.md` that exists without the import, a settings file that
+is not valid JSON, a pre-commit hook that belongs to somebody else. A `skip`
+line says why a step does not apply, and belongs in the report too: "no git hook
+here, because the rulebook is out of git" is a decision the reader should see.
 
-The script infers the modules from the anchors present rather than asking again:
-the file is the truth about itself, and a stamp that argues with it is worse
-than none.
+`--check` says the same without writing anything, and `--check --all` says it
+for every project in the registry. Run it on a project that was installed
+before this script existed: the steps nobody carried out show up as `todo`.
 
-### 5. Add the project to the registry
+The rest of this step is why the script does what it does. Read it before
+changing the script, not before running it.
 
-The registry is **outside this repository**, because this repository is public
-and the registry names private working directories:
+#### The stamp
 
-```bash
-~/.config/agents-rulebook/recipients.json
-```
+Anchors say *which* section this is; the stamp says *what it looked like when it
+arrived*. Without it, a section that differs from the template is ambiguous —
+either somebody edited it here, or the template moved on. Those are opposite
+fates, and the diff looks identical. The stamp script infers the modules from
+the anchors present rather than asking again: the file is the truth about
+itself, and a stamp that argues with it is worse than none.
 
-```json
-{ "recipients": ["~/Projects/some-project", "~/Documents/another"] }
-```
+An existing stamp is never rewritten here. A section that differs from its
+stamp is exactly the `ours` signal the sync reads, and re-stamping on install
+would erase it. `stamp-rulebook.mjs --check` says which sections have drifted.
 
-Paths are machine-local: one that is not on this machine is skipped silently, so
-a single list serves every computer.
+#### The registry
 
-### 6. Create `BACKLOG.md` and `CLAUDE.md`
+It lives **outside this repository**, because this repository is public and the
+registry names private working directories. Paths are machine-local: one that
+is not on this machine is skipped silently, so a single list serves every
+computer. A worktree registers its project's main checkout, which is where the
+copy lives.
 
-`BACKLOG.md` — from `templates/BACKLOG.md`, if the file does not exist yet.
-`CLAUDE.md` — exactly one line, `@AGENTS.md`, if the file does not exist yet.
+#### The hooks
 
-### 7. Render the page and install the hooks
+**Rulebook in git or out of it is the project's own call**, and the files go
+together either way: `AGENTS.md`, `CLAUDE.md`, the stamp and the page. The
+README says why a subset lies. The script reads the answer from `git
+check-ignore AGENTS.md` and installs the hooks that fit:
 
-```bash
-node <skill>/scripts/render-rulebook.mjs
-```
-
-Writes `.claude/rulebook.html` — one self-contained page with no CDN and no web
-font: sections grouped by module, each badged (canon / edited here / local /
-override with its reason), dated incidents highlighted, and a search box. The
-page is deterministic, so `--check` is a byte compare. It is committed alongside
-`AGENTS.md`: the page is what gets opened and sent as a link, the file is what
-gets edited.
-
-Two hooks keep the page from falling behind the file, and both are installed here:
-
-- **Claude Code** — in the project's `.claude/settings.json`, `PostToolUse` on
-  `Edit|Write`. In `--hook` mode the script reads the event from stdin and
-  re-renders only when `AGENTS.md` was edited; on other files it stays quiet and
-  never returns an error. If the skill is not on the machine, the hook is `true`.
-
-  ```json
-  {"hooks":{"PostToolUse":[{"matcher":"Edit|Write","hooks":[{"type":"command",
-   "command":"R=\"$HOME/.claude/skills/agents-init/scripts/render-rulebook.mjs\"; if [ -f \"$R\" ]; then node \"$R\" --hook; else true; fi",
-   "timeout":20}]}]}}
-  ```
-
-- **git pre-commit** — `.githooks/pre-commit`: if the commit touches
-  `AGENTS.md`, re-render and add the page. This is the common denominator for
-  any editor and any agent, not only Claude. Git does not version hooks, so once
-  per clone: `git config core.hooksPath .githooks`.
-
-  Install it as written, both guards included:
-
-  ```sh
-  #!/bin/sh
-  set -e
-  if git diff --cached --name-only --diff-filter=d | grep -qx 'AGENTS.md'; then
-    R="$HOME/.claude/skills/agents-init/scripts/render-rulebook.mjs"
-    if [ -f "$R" ]; then
-      node "$R"
-      git check-ignore -q .claude/rulebook.html || git add .claude/rulebook.html
-    else
-      echo "pre-commit: agents-init skill not found; the rulebook page was not rebuilt" >&2
-    fi
-  fi
-  ```
-
-  Both guards were paid for on 4 September 2026, the day one project took its
-  rulebook out of git. **`--diff-filter=d`**: the merge that carried the file
-  out staged its deletion, the hook rebuilt the page from a file that was
-  leaving, and `set -e` killed the commit. A deletion is not an edit; there is
-  nothing to keep in sync with a file going away. **`check-ignore`**: `git add`
-  on an ignored path fails, and the page was ignored now. The question is "is it
-  ignored?", not "is it tracked?" — a project keeping the rulebook in git must
-  still be able to add the page on the first commit, before it is tracked.
-  Where the page is ignored it is still rebuilt, so the local copy stays
-  current; it is only not staged. `git add -f` is the wrong way out: it commits
-  a file the project decided not to carry.
-
-  Which of the two a project is — rulebook in git or out of it — is its own
-  call, and the files go together either way: `AGENTS.md`, `CLAUDE.md`, the
-  stamp and the page. The README says why a subset lies.
-
-- **Worktree refresh — only where the rulebook is out of git.** Git no longer
-  carries it into worktrees, so each holds a copy, and a copy goes stale. Two
-  hooks in the user's `~/.claude/settings.json` (not the project's: they must
-  reach worktrees whose own settings are an old copy too) run
-  `scripts/refresh-worktree.mjs`. One fans an edit of the project's
-  `AGENTS.md` out to every worktree; the other refreshes a worktree when a
-  session starts in it, and tells the session to re-read the file if it had to
-  replace it. Check first that the user's settings do not already carry them.
-
-  ```json
-  {"hooks":{
-    "SessionStart":[{"hooks":[{"type":"command","timeout":20,
-      "command":"R=\"$HOME/.claude/skills/agents-init/scripts/refresh-worktree.mjs\"; if [ -f \"$R\" ]; then node \"$R\" --hook; else true; fi"}]}],
-    "PostToolUse":[{"matcher":"Edit|Write","hooks":[{"type":"command","timeout":20,
-      "command":"IN=$(cat); case \"$IN\" in *AGENTS.md*|*CLAUDE.md*|*rulebook.json*) R=\"$HOME/.claude/skills/agents-init/scripts/refresh-worktree.mjs\"; if [ -f \"$R\" ]; then printf \"%s\" \"$IN\" | node \"$R\" --hook; fi;; esac; true"}]}]}}
-  ```
+- **In git** — the git pre-commit hook, the common denominator for any editor
+  and any agent. It goes where the project already keeps its hooks. An
+  existing `core.hooksPath` is followed, never re-pointed: on 15 September 2026
+  valey-site had `core.hooksPath = tools/hooks`, holding the pre-push gate that
+  keeps an unreleased commit off `main`, and `git config core.hooksPath
+  .githooks` as this step used to say would have switched the gate off. A
+  pre-commit that is already there is not edited: whether the block can go at
+  its end depends on what runs before it. `install.mjs --pre-commit` prints the
+  block to add by hand. The hook carries two guards paid for on 4 September
+  2026, the day one project took its rulebook out of git; the script's comment
+  tells that story.
+- **Out of git** — no git hook, since `AGENTS.md` is never staged and the hook
+  would have nothing to fire on. Instead, two hooks in the user's
+  `~/.claude/settings.json` (not the project's: they must reach worktrees whose
+  own settings are an old copy too) run `scripts/refresh-worktree.mjs`. One fans
+  an edit of the project's `AGENTS.md` out to every worktree; the other
+  refreshes a worktree when a session starts in it, and tells the session to
+  re-read the file if it had to replace it.
 
   **Never link a worktree's `AGENTS.md` to the project's copy instead.** Claude
   Code does not load an instruction file that resolves outside its project; on
   12 September 2026 seventeen worktrees were linked, and the next session in
   one of them started with no rulebook at all. The README has the measurements.
 
-None of these hooks touches the project's stamp. A section that differs from
-the stamp is the `ours` signal for sync; updating the stamp on every commit
-would erase it.
+The Claude Code hook in the project's settings is installed in both cases. In
+its `--hook` mode `render-rulebook.mjs` reads the event from stdin and redraws
+only when `AGENTS.md` was edited; on other files it stays quiet and never
+returns an error. Every hook the script writes is guarded by `[ -f ]`, so a
+clone without the skill gets a no-op, not an error on every edit. A settings
+file is saved to `~/.config/agents-rulebook/settings-backups/` before a hook is
+merged into it.
 
-### 8. Say what comes next
+None of these hooks touches the stamp, for the same reason the install does
+not re-stamp.
+
+### 5. Say what comes next
 
 Agreements with no first entry are dead. In the report, name **one** nearest
 moment when the file will have to be extended: the first incident, the first
@@ -354,7 +327,8 @@ language the answer around them is written in.
 - **It does not commit**, and it does not edit `AGENTS.md` during a sync. A
   human reads the agreements and decides when they are right.
 - **It does not install linters or CI.** Those are separate tools with their own
-  cost. The two hooks in step 7 are the exception, and they only redraw a page.
+  cost. The hooks in step 4 are the exception, and they only redraw a page or
+  refresh a copy.
 - **It does not carry agreements between projects automatically.** A rule
   derived from somebody else's incident is cargo cult; a module travels whole,
   because it brings its own stories with it.
