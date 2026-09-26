@@ -178,10 +178,17 @@ would erase it. `stamp-rulebook.mjs --check` says which sections have drifted.
 #### The registry
 
 It lives **outside this repository**, because this repository is public and the
-registry names private working directories. Paths are machine-local: one that
-is not on this machine is skipped silently, so a single list serves every
-computer. A worktree registers its project's main checkout, which is where the
-copy lives.
+registry names private working directories. It is also in no other repository
+and nothing syncs it: each computer has its own list, or none. A path that is
+not on this machine is skipped silently — which also means a path that is gone
+stays listed until somebody says otherwise, with `install.mjs --forget <path>`.
+`--check --all` names a project with no commit in three weeks as a `note`, so
+a retired one gets noticed.
+
+A worktree registers its project's main checkout, which is where the copy
+lives, and an entry that is a worktree of the project is replaced by the
+project: the day the worktree is removed, it would drop the project out of every
+report without a word.
 
 #### The hooks
 

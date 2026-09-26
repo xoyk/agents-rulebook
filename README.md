@@ -99,7 +99,7 @@ The copies are listed in a registry that lives **outside this repository**, beca
 { "recipients": ["~/Projects/some-project", "~/Documents/another"] }
 ```
 
-in `~/.config/agents-rulebook/recipients.json`. A path that is not on this machine is skipped silently, so one list serves every computer.
+in `~/.config/agents-rulebook/recipients.json`. The file is in no repository and nothing syncs it, so each computer keeps its own list. A path that is not on this machine is skipped silently, and so is never dropped: `install.mjs` adds a project, `install.mjs --forget <path>` takes one out, and `install.mjs --check --all` marks a project with no commit in three weeks, so a retired one gets noticed.
 
 ```bash
 node ~/.claude/skills/agents-init/scripts/sync-rulebook.mjs --all

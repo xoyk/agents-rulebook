@@ -45,8 +45,8 @@ import { homedir } from "node:os";
 const SKILL_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 /*
  * The registry names private working directories, so it lives outside the
- * repository — this one is public. Machine-local either way: a path that is not
- * on this machine is skipped, so one file serves every computer.
+ * repository — this one is public. It is on one machine and nothing syncs it;
+ * a path that is not on this machine is skipped.
  */
 const REGISTRY = join(
   process.env.XDG_CONFIG_HOME || join(homedir(), ".config"),
