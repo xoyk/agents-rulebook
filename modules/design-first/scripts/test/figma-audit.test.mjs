@@ -145,3 +145,35 @@ test('a caption that wrapped pushes its frame down inside an auto-layout row', (
   assert.equal(drifted.code, 1, drifted.out);
   assert.match(drifted.out, /Row \/ main: Flip \[FRAME\] — starts 16 px below «Batter» beside it/);
 });
+
+/* ---- text colour not from a token ---- */
+
+const onScreen = (...labels) => frame('Screen / tea log', 0, 0, 400, 800, labels);
+
+test('a label painted with a literal blocks; a bound one or a colour style passes', () => {
+  const styled = { ...text('Cups today', 16, 40, solid('#f0f0f0')), styles: { fill: 'S:tea-text' } };
+  const clean = run(onScreen(text('Oolong', 16, 16), styled));
+  assert.equal(clean.code, 0, clean.out);
+
+  const { code, out } = run(onScreen(text('Oolong', 16, 16), text('Sencha', 16, 40, solid('#eeeeee'))));
+  assert.equal(code, 1, out);
+  assert.match(out, /text colour not from a token — 1\n\s+Screen \/ tea log: "Sencha" — #eeeeee typed as a literal/);
+});
+
+test('a literal in one run of a bound label is caught, a literal base under full overrides is not', () => {
+  const runs = (characters, ids, table, base) => ({
+    ...text(characters, 16, 16, base), characterStyleOverrides: ids, styleOverrideTable: table,
+  });
+  const mixed = runs('Green 3', [0, 0, 0, 0, 0, 0, 1], { 1: { fills: [solid('#dddddd')] } }, bound('#f0f0f0'));
+  const hidden = runs('ab', [1, 1], { 1: { fills: [bound('#f0f0f0')] } }, solid('#f0f0f0'));
+  const { code, out } = run(onScreen(mixed, hidden));
+  assert.equal(code, 1, out);
+  assert.match(out, /"Green 3" — #dddddd typed as a literal, no variable or colour style behind it \(in one run of several\)/);
+  assert.doesNotMatch(out, /"ab" — .*typed as a literal/);
+});
+
+test('textTokens: false turns the rule off and says so', () => {
+  const { code, out } = run(onScreen(text('Sencha', 16, 16, solid('#eeeeee'))), { rulebook: { textTokens: false } });
+  assert.equal(code, 0, out);
+  assert.match(out, /note: figma\.textTokens is false/);
+});
