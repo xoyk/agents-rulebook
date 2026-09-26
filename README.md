@@ -78,7 +78,7 @@ A project may keep a module's rule but not its text — holding the mechanics so
 
 1. Create `modules/<name>/MODULE.md`. Every `##` and `###` heading carries a `<!-- rule:<id> -->` anchor above it, and the id is not used anywhere else in the canon.
 2. Put its tools, if any, in `modules/<name>/scripts/` and its procedures in `modules/<name>/skills/`, reading everything project-specific from the project at run time. The rule text names each one by its path under the skill directory, or nobody will find it.
-3. Add the module to the assembly order and to the questions in `SKILL.md`, and to the table above.
+3. Add the module to the assembly order and to the questions in `SKILL.md`, and to the table above. Register its section ids in `scripts/lib/sections.mjs`, its `MODULE.md` in the template list of `scripts/sync-rulebook.mjs`, and its group name in `scripts/render-rulebook.mjs` — a section missing from the first is reported as unknown by the stamp and the page, and a module missing from the second is invisible to the sync.
 4. Commit it with the incident that made it necessary. A module travels whole because it brings its own stories with it.
 
 ## Anchors and the stamp
