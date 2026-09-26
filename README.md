@@ -205,19 +205,25 @@ node ~/.claude/skills/agents-init/modules/design-first/scripts/figma-audit.mjs <
 
 It fetches the given nodes — a frame, a section or a whole page — through the Figma REST API and reports what the canvas does not show. It exits `0` when nothing blocks, `1` on a blocking finding, and `2` when it could not run.
 
+`--from <dir>` reads saved responses instead — `nodes.json` from `/v1/files/<key>/nodes`, and optionally `file.json` from `/v1/files/<key>?depth=2` — and needs neither a token nor a file key. The rules are tested that way, against invented canvases: `node --test modules/design-first/scripts/test/figma-audit.test.mjs`.
+
 | Rule | What it catches |
 |---|---|
 | `black bound paint` | A paint bound to a variable that still carries a black literal: the binding did not resolve, and the frame renders black. |
 | `dark text off accent` | Dark text on a dark ground. |
+| `text colour not from a token` | A label, or one run of it, painted with a literal colour — no variable and no colour style behind it. |
 | `text the colour of its ground` | A label exactly the colour of what it sits on. |
 | `text too close to its ground` | A label under the contrast floor against its ground. The ground is searched among shapes painted below the label as well as its parents. |
 | `stale base fill` | A base fill left under a fully overridden label. Advisory only: it renders nothing until the text grows. |
 | `content outside its section` | A section that stopped covering its own content. |
 | `section in the default fill` | A section still in the plain white fill Figma gives a new one. |
+| `sections overlap` | Two sections whose boxes overlap, where one is the audited section or both sit inside what was audited. The audited section's neighbours come from the page, read two levels deep. |
+| `sections overlap elsewhere on the page` | The same between two neighbours, neither of them audited. Advisory only: it is somebody else's section to move. |
+| `frames out of line in a row` | Frames side by side in a section, on a page or at the foot of the cells of a top-aligned horizontal auto-layout row, one starting a little below the other — less than a quarter of the shorter one's height, which is a caption that wrapped, not a new row. |
 | `layer drifted out of its instance` | An absolutely placed layer hanging outside the instance it belongs to. |
 | `text clipped by its frame` | A label cut off by the frame that clips it. A frame standing for a scrolled list is exempt when its name says so — `scrolls`. |
 
-Every rule except `stale base fill` blocks. A rule added later blocks by default: a new fault that turns out harmless is a smaller surprise than one that silently stops gating.
+Every rule except `stale base fill` and `sections overlap elsewhere on the page` blocks. A rule added later blocks by default: a new fault that turns out harmless is a smaller surprise than one that silently stops gating.
 
 It reads its settings from the project's `.claude/rulebook.json`, under `figma`:
 
@@ -228,6 +234,7 @@ It reads its settings from the project's `.claude/rulebook.json`, under `figma`:
 | `palette` | The design's own colours. A leftover in one of them is not reported as debris from an older palette. |
 | `accentGrounds` | Grounds on which dark text is intended. |
 | `darkTextLuminance` | Below this luminance text counts as dark. Default `0.4`, which suits light designs; a dark design needs a much lower value or it reports its own hint colour. |
+| `textTokens` | `false` for a design with no colour tokens at all, which turns off `text colour not from a token`; every run then says it is off. Default `true`. |
 | `minContrast` | The contrast floor. Default `1.6` — not an accessibility bar, a "cannot be read at all" bar. |
 
 The file key comes from `--file`, then `FIGMA_FILE_KEY`, then `figma.file`, then `figma.filePath`, then `FIGMA_FILE_KEY` in the project's `.env`. The token comes from `FIGMA_TOKEN`, then `figma.tokenPath`, then `.env`, then `"env": { "FIGMA_TOKEN": ... }` in `~/.claude/settings.json`, which also puts it in front of every agent. A value found this way is never printed.

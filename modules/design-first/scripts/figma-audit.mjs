@@ -16,6 +16,11 @@
  * .claude/rulebook.json, then .env. The token comes from FIGMA_TOKEN or .env,
  * and never from anywhere a repository can reach.
  *
+ * --from <dir> reads saved API responses instead of the network: <dir>/nodes.json
+ * is what /v1/files/<key>/nodes answered, and <dir>/file.json, if present, what
+ * /v1/files/<key>?depth=2 answered. No token and no file key are needed then,
+ * which is what lets the rules be tested against invented fixtures.
+ *
  * Exits 1 when it finds a fault that gates a promotion; a stale base fill is
  * printed but does not fail the run, because nobody can see one. Exits 0 and
  * says so when the frames are clean.
@@ -44,9 +49,36 @@ function readEnvFile() {
   }
 }
 
+/* Flags that take a value; everything else on the command line is a node id. */
+const VALUE_FLAGS = new Set(['--file', '--from']);
+
+function flagValue(flag) {
+  const i = process.argv.indexOf(flag);
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : null;
+}
+
+function nodeIdArgs() {
+  const ids = [];
+  for (let i = 2; i < process.argv.length; i += 1) {
+    if (VALUE_FLAGS.has(process.argv[i])) { i += 1; continue; }
+    ids.push(process.argv[i].replace('-', ':'));
+  }
+  return ids;
+}
+
+const SAVED = flagValue('--from');
+
+function readSaved(name) {
+  try {
+    return JSON.parse(readFileSync(join(SAVED, name), 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
 function readFileKey() {
-  const i = process.argv.indexOf('--file');
-  if (i >= 0 && process.argv[i + 1]) return process.argv[i + 1];
+  const flagged = flagValue('--file');
+  if (flagged) return flagged;
   if (process.env.FIGMA_FILE_KEY) return process.env.FIGMA_FILE_KEY;
   if (FIGMA_CONFIG.file) return FIGMA_CONFIG.file;
   const external = fromExternal('filePath');
@@ -199,13 +231,19 @@ function readToken() {
   );
 }
 
-async function fetchNodes(token, ids) {
-  const url = `https://api.figma.com/v1/files/${readFileKey()}/nodes?ids=${ids.join(',')}`;
-  const response = await fetch(url, { headers: { 'X-Figma-Token': token } });
-  if (!response.ok) {
-    throw new Error(`Figma answered ${response.status} ${response.statusText} for ${ids.join(', ')}`);
+async function fetchNodes(ids) {
+  let body;
+  if (SAVED) {
+    body = readSaved('nodes.json');
+    if (!body) throw new Error(`--from ${SAVED}: no readable nodes.json there.`);
+  } else {
+    const url = `https://api.figma.com/v1/files/${readFileKey()}/nodes?ids=${ids.join(',')}`;
+    const response = await fetch(url, { headers: { 'X-Figma-Token': readToken() } });
+    if (!response.ok) {
+      throw new Error(`Figma answered ${response.status} ${response.statusText} for ${ids.join(', ')}`);
+    }
+    body = await response.json();
   }
-  const body = await response.json();
   const missing = ids.filter((id) => !body.nodes[id.replace('-', ':')]?.document);
   if (missing.length) throw new Error(`No such node in the file: ${missing.join(', ')}`);
   return body.nodes;
@@ -277,6 +315,63 @@ function blackBoundPaints(node, frame, found) {
     if (toHex(fill.color) !== '#000000') continue;
     found.push({ rule: 'black bound paint', frame, node: label(node), detail: 'bound to a variable, literal #000000' });
   }
+}
+
+/*
+ * Fault 12 — a label painted with a literal instead of a token.
+ *
+ * Painting (MODULE.md) keeps a colour map for text of its own — white means
+ * the primary text token — and every rule here judges the colour a label
+ * shows. None asks where the colour came from, and a literal is the one that
+ * drifts: it looks right on the day it is typed, and the next change to the
+ * token repaints every label except that one. Nothing on the canvas tells a
+ * bound #f0f0f0 from a typed one.
+ *
+ * Judged per character, like everything else about text here: a run's own
+ * paint when it has one, the base fill otherwise, so a base nobody renders is
+ * not reported (that is fault 3's business). A shared colour style counts as a
+ * token — it is how a plan without variables names a colour. Fault 1 already
+ * covers a bound paint whose binding did not resolve.
+ *
+ * A project that has no colour tokens at all turns this off in
+ * .claude/rulebook.json with "textTokens": false, and main() says so on every
+ * run rather than letting a rule that did not run read as a pass.
+ */
+const TEXT_TOKENS = FIGMA_CONFIG.textTokens !== false;
+
+function textColourNotFromToken(node, frame, found) {
+  if (!TEXT_TOKENS || node.type !== 'TEXT') return;
+  const characters = node.characters ?? '';
+  if (!characters.trim().length || isPictographic(characters)) return;
+
+  const visibleSolid = (fills) => (fills ?? []).find((f) => f.type === 'SOLID' && f.visible !== false);
+  const base = visibleSolid(node.fills);
+  const baseIsToken = Boolean(base?.boundVariables?.color || node.boundVariables?.fills?.length || node.styles?.fill);
+  const table = node.styleOverrideTable ?? {};
+  const overrides = node.characterStyleOverrides ?? [];
+  const literals = new Set();
+  let runs = 0;
+
+  for (let index = 0; index < characters.length; index += 1) {
+    const id = overrides[index];
+    const override = id ? table[String(id)] : null;
+    const run = visibleSolid(override?.fills);
+    if (run) {
+      runs += 1;
+      if (!run.boundVariables?.color && !override.boundVariables?.fills?.length) literals.add(toHex(run.color));
+    } else if (base && !baseIsToken) {
+      literals.add(toHex(base.color));
+    }
+  }
+  if (!literals.size) return;
+
+  const mixed = runs > 0 && runs < characters.length;
+  found.push({
+    rule: 'text colour not from a token',
+    frame,
+    node: label(node),
+    detail: `${[...literals].join(', ')} typed as a literal, no variable or colour style behind it${mixed ? ' (in one run of several)' : ''}`,
+  });
 }
 
 /*
@@ -502,11 +597,125 @@ function defaultSectionFill(section, found) {
   });
 }
 
+/*
+ * Fault 10 — sections that grew into each other.
+ *
+ * Sections are placed by hand and nothing arranges them: a section has no
+ * auto-layout and a frame cannot hold one, so on a page several people edit
+ * they grow into their neighbours. The one underneath is hidden until somebody
+ * scrolls onto it, and every rule above still calls both clean, because each
+ * judges what is inside a section and none looks at where it sits. Placement
+ * (MODULE.md) says occupancy is read from absoluteBoundingBox, never from the
+ * order of the children; this is the same measure, taken after the fact.
+ *
+ * Only sections are compared. Content hanging past its own section is fault 5,
+ * and a frame lying loose on a page is not somebody's section to move.
+ */
+function sectionOverlap(a, b) {
+  const A = a.absoluteBoundingBox;
+  const B = b.absoluteBoundingBox;
+  if (!A || !B) return null;
+  const dx = Math.min(A.x + A.width, B.x + B.width) - Math.max(A.x, B.x);
+  const dy = Math.min(A.y + A.height, B.y + B.height) - Math.max(A.y, B.y);
+  /* Half a pixel, as in fault 5: sections set flush against each other touch,
+     they do not overlap. */
+  return dx > 0.5 && dy > 0.5 ? `${Math.round(dx)} × ${Math.round(dy)} px` : null;
+}
+
+const childSections = (container) =>
+  (container.children ?? []).filter((c) => c.type === 'SECTION' && c.visible !== false);
+
+/*
+ * Within what was fetched, every overlap is the audited work's own: a page
+ * audited whole, or sections nested inside the audited one.
+ */
+function sectionsOverlapping(container, found) {
+  const sections = childSections(container);
+  for (let i = 0; i < sections.length; i += 1) {
+    for (let j = i + 1; j < sections.length; j += 1) {
+      const size = sectionOverlap(sections[i], sections[j]);
+      if (!size) continue;
+      found.push({
+        rule: 'sections overlap',
+        frame: sections[i].name,
+        node: label(sections[j]),
+        detail: `the two sections overlap by ${size} — move one to free canvas`,
+      });
+    }
+  }
+}
+
+/*
+ * Fault 11 — frames in one row that do not share a top line.
+ *
+ * A row puts frames side by side so a reader compares them by looking across:
+ * a phone and its tablet twin, a state and the state after it. That only works
+ * while they start on the same line, and a row built as caption-over-frame
+ * stacks does not keep it — a caption that wraps to one more line pushes its
+ * own frame down, and the row looks finished at any zoom where captions are
+ * unreadable. Hand-placed rows drift the same way, one nudge at a time.
+ *
+ * A row is read from geometry, since the canvas does not name one: frames
+ * sitting directly in a section or on a page, and the frames at the foot of
+ * each cell of a top-aligned horizontal auto-layout row. Two of them belong to
+ * one row when they stand side by side and one starts below the other by less
+ * than a quarter of the shorter one's height. A drop that large is somebody's
+ * next row, or a deliberate stagger; a drop of a caption line is neither.
+ * Half a pixel of slack, as everywhere here.
+ */
+const FRAME_LIKE = new Set(['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE']);
+const isFrameLike = (n) => FRAME_LIKE.has(n.type) && n.visible !== false && n.absoluteBoundingBox;
+
+/* The frame a cell shows: the last thing in a caption-over-frame stack. */
+function cellFrame(cell) {
+  if (cell.layoutMode !== 'VERTICAL') return isFrameLike(cell) ? cell : null;
+  const shown = (cell.children ?? []).filter((c) => c.visible !== false);
+  const last = shown[shown.length - 1];
+  return shown.length > 1 && last && isFrameLike(last) ? last : null;
+}
+
+function framesOutOfLine(members, row, found) {
+  for (const frame of members) {
+    const b = frame.absoluteBoundingBox;
+    let worst = null;
+    for (const other of members) {
+      if (other === frame) continue;
+      const c = other.absoluteBoundingBox;
+      const drop = b.y - c.y;
+      if (drop <= 0.5 || drop >= Math.min(b.height, c.height) / 4) continue;
+      const beside = b.x >= c.x + c.width - 0.5 || c.x >= b.x + b.width - 0.5;
+      if (!beside) continue;
+      if (!worst || drop > worst.drop) worst = { other, drop };
+    }
+    if (!worst) continue;
+    found.push({
+      rule: 'frames out of line in a row',
+      frame: row.name,
+      node: label(frame),
+      detail: `starts ${Math.round(worst.drop)} px below «${worst.other.name}» beside it — a row shares one top line`,
+    });
+  }
+}
+
+function rowsOutOfLine(container, found) {
+  const children = (container.children ?? []).filter((c) => c.visible !== false);
+  framesOutOfLine(children.filter(isFrameLike), container, found);
+  for (const row of children) {
+    if (row.layoutMode !== 'HORIZONTAL' || (row.counterAxisAlignItems ?? 'MIN') !== 'MIN') continue;
+    const frames = (row.children ?? []).filter((c) => c.visible !== false).map(cellFrame).filter(Boolean);
+    framesOutOfLine(frames, row, found);
+  }
+}
+
 /* Sections nest, and the audited node may be a page, a section or a frame. */
 function auditSections(node, found) {
   if (node.type === 'SECTION') {
     contentOutsideSection(node, found);
     defaultSectionFill(node, found);
+  }
+  if (node.type === 'SECTION' || node.type === 'CANVAS') {
+    sectionsOverlapping(node, found);
+    rowsOutOfLine(node, found);
   }
   for (const child of node.children ?? []) auditSections(child, found);
 }
@@ -698,6 +907,71 @@ function textClippedByFrame(node, ancestry, frame, found) {
 }
 
 /*
+ * The neighbours of an audited section are not in the /nodes answer, which
+ * holds only the node asked for. The page they share comes from the file read
+ * two levels deep — the pages and what sits directly on them, no further.
+ */
+async function fetchPages(notes) {
+  if (SAVED) {
+    const body = readSaved('file.json');
+    if (!body) notes.push(`--from ${SAVED} holds no file.json, so no section was compared with its neighbours.`);
+    return body?.document?.children ?? null;
+  }
+  const url = `https://api.figma.com/v1/files/${readFileKey()}?depth=2`;
+  const response = await fetch(url, { headers: { 'X-Figma-Token': readToken() } });
+  if (!response.ok) {
+    notes.push(`Figma answered ${response.status} for the page read, so no section was compared with its neighbours.`);
+    return null;
+  }
+  return (await response.json()).document?.children ?? null;
+}
+
+/*
+ * The page is a shared surface, so an overlap there is reported whoever caused
+ * it — but it gates only when one of the two is the section being audited.
+ * Blocking a promotion over two other people's sections would hand this
+ * section's owner work that is not theirs (MODULE.md, "one owner"); keeping
+ * quiet about it would leave the collision for whoever scrolls onto it.
+ */
+async function neighbourOverlaps(roots, found, notes) {
+  const sections = roots.filter((root) => root.type === 'SECTION');
+  if (!sections.length) return;
+  const pages = await fetchPages(notes);
+  if (!pages) return;
+  const audited = new Set(sections.map((section) => section.id));
+  const seen = new Set();
+  for (const section of sections) {
+    const page = pages.find((p) => (p.children ?? []).some((c) => c.id === section.id));
+    if (!page) {
+      notes.push(`${section.name} does not sit directly on a page, so it was not compared with its neighbours.`);
+      continue;
+    }
+    if (seen.has(page.id)) continue;
+    seen.add(page.id);
+    const onPage = childSections(page);
+    for (let i = 0; i < onPage.length; i += 1) {
+      for (let j = i + 1; j < onPage.length; j += 1) {
+        const size = sectionOverlap(onPage[i], onPage[j]);
+        if (!size) continue;
+        const mine = audited.has(onPage[i].id) ? onPage[i] : audited.has(onPage[j].id) ? onPage[j] : null;
+        const other = mine === onPage[i] ? onPage[j] : onPage[i];
+        found.push(mine ? {
+          rule: 'sections overlap',
+          frame: mine.name,
+          node: label(other),
+          detail: `the two sections overlap by ${size} — move this one to free canvas`,
+        } : {
+          rule: 'sections overlap elsewhere on the page',
+          frame: page.name,
+          node: `${label(onPage[i])} and ${label(onPage[j])}`,
+          detail: `overlap by ${size} — not this section's doing; worth moving whichever arrived last`,
+        });
+      }
+    }
+  }
+}
+
+/*
  * A hidden layer is not on the canvas, so nothing in it can be misread. It is
  * skipped whole, children included. On 12 September 2026 a price list built
  * from one tier component hid the command line in two tiers of three; the
@@ -710,6 +984,7 @@ function walk(node, ancestry, frame, found) {
   if (node.visible === false) return;
   blackBoundPaints(node, frame, found);
   darkTextOffAccent(node, ancestry, frame, found);
+  textColourNotFromToken(node, frame, found);
   textMatchesGround(node, ancestry, frame, found);
   textTooCloseToGround(node, ancestry, frame, found);
   driftedAbsoluteLayers(node, frame, found);
@@ -723,11 +998,13 @@ function walk(node, ancestry, frame, found) {
  * The faults that gate a promotion. Every rule above is printed either way;
  * only these decide the exit code. `stale base fill` is deliberately not among
  * them — it renders nothing, so failing on it would block a promotion over
- * something nobody can see (AGENTS.md, "Painting"). Membership is by exclusion
- * so a rule added later gates by default: a new fault that turns out to be
- * invisible is a smaller surprise than one that silently stops gating.
+ * something nobody can see (AGENTS.md, "Painting"). Neither is an overlap
+ * between two sections this run was not asked about — see neighbourOverlaps.
+ * Membership is by exclusion so a rule added later gates by default: a new
+ * fault that turns out to be invisible is a smaller surprise than one that
+ * silently stops gating.
  */
-const ADVISORY_RULES = new Set(['stale base fill']);
+const ADVISORY_RULES = new Set(['stale base fill', 'sections overlap elsewhere on the page']);
 
 function reportByRule(items) {
   const byRule = new Map();
@@ -743,13 +1020,9 @@ function reportByRule(items) {
 }
 
 async function main() {
-  const flagged = process.argv.indexOf('--file');
-  const ids = process.argv
-    .slice(2)
-    .filter((a, i) => a !== '--file' && i + 2 !== flagged + 1)
-    .map((id) => id.replace('-', ':'));
+  const ids = nodeIdArgs();
   if (!ids.length) {
-    console.error('Usage: figma-audit.mjs [--file <key>] <node-id> [node-id...]');
+    console.error('Usage: figma-audit.mjs [--file <key> | --from <dir>] <node-id> [node-id...]');
     process.exit(2);
   }
 
@@ -763,10 +1036,15 @@ async function main() {
     console.log("note: figma.palette is not set, so a leftover in this design's own");
     console.log('      colours is reported alongside debris from an older one.');
   }
-  if (!ACCENT_GROUNDS.size || !MOBILE_PALETTE.size) console.log('');
+  if (!TEXT_TOKENS) {
+    console.log('note: figma.textTokens is false, so a label painted with a literal colour');
+    console.log('      instead of a variable or colour style is not reported.');
+  }
+  if (!ACCENT_GROUNDS.size || !MOBILE_PALETTE.size || !TEXT_TOKENS) console.log('');
 
-  const nodes = await fetchNodes(readToken(), ids);
+  const nodes = await fetchNodes(ids);
   const found = [];
+  const notes = [];
   let scanned = 0;
 
   for (const entry of Object.values(nodes)) {
@@ -784,6 +1062,11 @@ async function main() {
       walk(target, [], target.name, found);
     }
   }
+  await neighbourOverlaps(Object.values(nodes).map((entry) => entry.document), found, notes);
+
+  /* A check that could not run says so before anything reads as clean. */
+  for (const note of notes) console.log(`note: ${note}`);
+  if (notes.length) console.log('');
 
   if (!found.length) {
     console.log(`Clean: ${scanned} frame(s) audited, nothing found.`);
