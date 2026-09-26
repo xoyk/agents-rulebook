@@ -140,6 +140,12 @@ section, place against that, and re-scan afterwards to assert no overlaps.
 `absoluteBoundingBox` can read stale for a node moved earlier in the same
 script — place one frame per pass, or track the boxes yourself.
 
+**`section.resizeWithoutConstraints()` moves the section's children**, whatever
+its name promises: it re-anchors them as the section changes size. So resize the
+section first, place its children afterwards, then re-scan for overlaps. In one
+project a section was grown three times while its `Brief` got longer, and four
+frames ended up stacked on one spot — with every write reporting success.
+
 Keep the active frame's node id in the implementation source, so the code stays
 traceable to the currently approved design.
 
