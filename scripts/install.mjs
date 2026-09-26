@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 /**
- * Wires an assembled AGENTS.md into its project: the stamp, CLAUDE.md,
- * BACKLOG.md, the rendered page, the hooks that keep the page current, the
+ * Wires an assembled AGENTS.md into its project: the stamp, BACKLOG.md, the rendered page, the hooks that keep the page current, the
  * worktree hooks where the rulebook is out of git, and the registry entry.
  *
  * Until this script existed, all of that was prose in SKILL.md, carried out by
@@ -219,16 +218,11 @@ function install(root) {
     execFileSync("node", [join(SKILL_ROOT, "scripts/stamp-rulebook.mjs"), "--basis", basis], { cwd: root, stdio: "ignore" });
   });
 
-  // ---------------------------------------------------------------- CLAUDE.md
-  // Claude Code 2.1.282 loads AGENTS.md by itself — measured on 26 September
-  // 2026 with a code word in AGENTS.md and no CLAUDE.md — and does not load it
-  // twice when CLAUDE.md imports it as well. So the import is for older
-  // versions, and a CLAUDE.md of the project's own without it is not a gap: the
-  // first version of this script called it one, and the verdict was wrong.
-  const claude = join(root, "CLAUDE.md");
-  if (!existsSync(claude)) act("CLAUDE.md", "one line, @AGENTS.md", () => writeFileSync(claude, "@AGENTS.md\n"));
-  else if (/^@AGENTS\.md\s*$/m.test(readFileSync(claude, "utf8"))) report("ok", "CLAUDE.md", "imports @AGENTS.md");
-  else report("ok", "CLAUDE.md", "the project's own, without the import; current Claude Code reads AGENTS.md anyway");
+  // No CLAUDE.md step. Claude Code 2.1.282 loads AGENTS.md by itself — measured
+  // on 26 September 2026 with a code word in AGENTS.md, no CLAUDE.md, and user
+  // settings and hooks switched off; the control without AGENTS.md answered
+  // NONE. The one-line `@AGENTS.md` pointer the canon used to install is
+  // redundant there, and a CLAUDE.md a project already has is its own business.
 
   // ---------------------------------------------------------------- BACKLOG.md
   const backlog = join(root, "BACKLOG.md");
