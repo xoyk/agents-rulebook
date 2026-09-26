@@ -16,12 +16,31 @@ has — are not the drafting surface, and they do not share a page with drafts.
 A `WIP` page holds one section per open feature. **An empty `WIP` page means
 everything drawn has reached the code.**
 
+What follows is what a section must *say*. What it must *look like* — the
+template it is duplicated from, the masters it instances, the layout grid, the
+fill that shows its state, the links — is a tool of this module, read from the
+skill directory rather than copied here:
+
+```text
+~/.claude/skills/agents-init/modules/design-first/skills/figma-wip-section/SKILL.md
+```
+
+Read it before opening or reshaping a section. It takes this project's file,
+template, masters and colours from the `figma.wip` block of
+`.claude/rulebook.json`, and a section is not built by hand from primitives
+while a template exists.
+
 1. **Name the screens it touches** before drawing anything. That list is what
    gets promoted at step 4.
 2. **Create a section** named `<state> WIP — <feature>` and draw the new
    versions inside it, copied from the production frames. The state is a
    coloured circle so it reads from the canvas and from the layers list:
-   🟡 drawing, 🔵 waiting for approval, 🟢 in code, waiting for acceptance.
+   🟡 drawing, 🔵 waiting for approval, 🟢 approved — ready to code, and green
+   from then on, through implementation and acceptance on a build. The state
+   says whose move it is, so it only moves forward: once the approval has been
+   given the section never goes back to 🔵. A correction or a repair inside an
+   approved section is not a new request for approval and leaves the state
+   alone.
 
    The first thing in the section is a **`Brief` card**, and it is a table
    rather than a paragraph: a narrow left column of labels, dimmed so the
@@ -42,7 +61,8 @@ everything drawn has reached the code.**
    - **owner** — one name. The line of work that opened the section owns it,
      and other sections are left alone unless asked.
    - **state** — the same coloured circle as the section name, then the state
-     in words and what is drawn so far.
+     in words and how far the work has got: what is drawn, and once the
+     section is green, what is built and whether it has been accepted.
 
    It is what makes a section left open for three weeks readable by someone who
    was not there, and the fixed row names are the point: prose lets a skipped
@@ -51,21 +71,63 @@ everything drawn has reached the code.**
    with a drawn scene wants `references` and `light`, a project with a design
    linter wants `audit`, holding the findings it declares deliberate. Adding a
    row is fine; dropping one is not.
+
+   **A project with a tracker adds a `ticket` row**, straight after **entry
+   points**. It is optional in the canon — a project without a tracker has
+   nothing to put there, and leaving it out drops nothing — and once a project
+   has added it, it is as mandatory as the rest. It names the tracker's issue
+   for the feature the design is a phase of: that one issue, never a second,
+   design-only one beside it, because two issues for one piece of work drift
+   apart and only one of them gets read. **The section's state and the issue's
+   status then move together, in the same step:** the flip to 🔵 moves the
+   issue to its review status, the flip to 🟢 moves it to development, and
+   neither moves back. The tracker is what the rest of the team reads, and an
+   issue left behind tells them the wrong thing — one project had a feature
+   sitting in its briefing status with four rows of frames already handed over
+   for review.
 3. **Check the section's own coordinates against the frames inside it.** A
    section can be created in one place while its frames sit far away and still
    be their parent; the section then reads as empty and its neighbours look
    free when they are not. After placing frames, assert that the section's
    `absoluteBoundingBox` contains every child's, and grow it if not.
-4. **Promote only after the feature is accepted on a real build.** Move the
-   current production frames to `Legacy`, put the new ones in their place, and
-   delete the now-empty `WIP` section. Exploration — rejected options,
-   comparison boards — goes to `Legacy` too: that is where the answer to "why
-   is it like this?" belongs.
+4. **Promote only after the feature is accepted on a real build.** A green
+   section is approved, not accepted: green says the next move is the code's,
+   and acceptance is the user's word on the running build. Then move the
+   section's own components to the design library, as the next section sets
+   out; move the current production frames to `Legacy`, put the new ones in
+   their place, and delete the now-empty `WIP` section. Exploration —
+   rejected options, comparison boards — goes to `Legacy` too: that is where
+   the answer to "why is it like this?" belongs.
+
+<!-- rule:component-promotion -->
+### A section's components are promoted with it
+
+While a feature is being drawn, the components it invents live as local
+masters inside its `WIP` section. That is right: they are not agreed yet, and an
+unapproved component has no business in anyone's asset panel. It stops being
+right at promotion. Frames that reach production still pointing at masters in a
+`WIP` section depend on a draft that is about to be deleted.
+
+So the masters go first, in this order:
+
+1. Publish the section's new components to the shared design library.
+2. Re-point the section's instances at the published versions.
+3. Move the frames into production, as in step 4 above.
+4. Delete the local masters nothing instantiates any more. Keep only those a
+   `Legacy` or rejected section still needs in order to render.
+
+**Copy the masters into the library, never cut them.** Cutting looks like the
+same move and is not: every instance still pointing at a cut master is left
+pointing at a component that no longer exists, and Figma gives no warning — the
+frames look exactly as they did until somebody fixes the component and the fix
+reaches none of them. A copy leaves the old instances whole until step 2 has
+moved them, and step 4 deletes what is left once nothing depends on it.
 
 <!-- rule:archiving -->
 ### Archiving
 
-Whenever a production frame is replaced:
+Whenever a production frame is replaced — at promotion, or by a direct edit the
+user asked for:
 
 1. Copy the current frame into `Legacy`, placed last in its row.
 2. Rename the copy with a trailing `legacy-v1`, then `-v2`, and so on.
@@ -84,6 +146,20 @@ missed, a padding never set, an invisible leftover removed. Nothing was decided
 differently, so there is nothing to explain, and the copy is one more frame
 between the reader and the ones that do explain something.
 
+One project learned this from both sides on 2026-08-25, in a single day: nine
+tab-switch wrappers shared one padding bug, whose nine archived copies would have
+taught nobody anything, and four sign-up frames were archived before it turned
+out they were not changing at all, so the copies had to be deleted again as
+debris.
+
+**A repair still takes the `✅` off.** Step 3 is about approval, not history,
+and the two answer different questions. `Legacy` asks whether anything was
+decided differently — after a repair, no, so no copy. The `✅` says the user
+approved this frame as it stands — after a repair it no longer stands as it was,
+however small the change, so the mark waits until they have seen it. It is a
+mark on one frame, not the state of a `WIP` section, which a repair leaves
+alone.
+
 <!-- rule:placement -->
 ### Placement
 
@@ -92,6 +168,12 @@ Never place a frame by scanning `parent.children`. Build occupancy from
 section, place against that, and re-scan afterwards to assert no overlaps.
 `absoluteBoundingBox` can read stale for a node moved earlier in the same
 script — place one frame per pass, or track the boxes yourself.
+
+**`section.resizeWithoutConstraints()` moves the section's children**, whatever
+its name promises: it re-anchors them as the section changes size. So resize the
+section first, place its children afterwards, then re-scan for overlaps. In one
+project a section was grown three times while its `Brief` got longer, and four
+frames ended up stacked on one spot — with every write reporting success.
 
 Keep the active frame's node id in the implementation source, so the code stays
 traceable to the currently approved design.
@@ -201,4 +283,5 @@ four. Everyone had the rule; one had the thing that enforces it.
 No branches, no merges. A `WIP` section belongs to the line of work that opened
 it: put an `Owner:` line in its `Brief` and leave other sections alone unless
 asked. A section renamed under its own brief — 🟢 on the canvas, "nothing is
-built" in the words — is what ignoring that costs.
+built" in the words, back when green still meant "in code" — is what ignoring
+that costs.

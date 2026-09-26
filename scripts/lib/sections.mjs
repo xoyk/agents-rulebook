@@ -16,11 +16,12 @@ export const MODULE_OF = {
          "parallel-work", "worktree-limits", "commits", "pushing",
          "merge-and-release", "user-only", "extending", "section-anchors",
          "canon-precedence"],
-  "design-first": ["design-first", "wip-section", "archiving", "placement",
-                   "painting", "design-file-shared"],
+  "design-first": ["design-first", "wip-section", "component-promotion",
+                   "archiving", "placement", "painting", "design-file-shared"],
   release: ["release-notes", "release-pictures", "release-tree",
             "build-numbers", "finishing-release"],
   publishing: ["publishing", "publishing-is-overwriting", "public-invented-data"],
+  "team-feed": ["team-feed"],
 };
 
 export const ANCHOR = /^<!-- (rule|local):([a-z0-9-]+) -->$/gm;
