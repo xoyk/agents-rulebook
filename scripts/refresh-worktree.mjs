@@ -45,11 +45,24 @@
  * made there anyway should be recoverable rather than silently gone.
  */
 import { execFileSync } from "node:child_process";
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join } from "node:path";
 
 const FILES = ["AGENTS.md", "CLAUDE.md", ".claude/rulebook.json"];
+// Files merged by key instead of copied whole. A worktree's
+// .claude/settings.local.json is not only the project's to write: Claude Code
+// appends to permissions.allow there every time the user answers "always allow"
+// inside that tree. Copying the file over would throw those away at the start of
+// every session, and the user would notice only by permissions that had stopped
+// being remembered. So one key travels and the rest of the file is left alone.
+//
+// autoMode.environment is the security profile the auto-mode classifier judges by.
+// It is per project — which repo is trusted, which remote publishes, where the
+// secrets are — so a worktree without it is judged by the machine-wide profile,
+// which knows none of that. Worktrees are created often enough that copying it by
+// hand was never going to happen.
+const MERGE = [{ file: ".claude/settings.local.json", key: "autoMode" }];
 const BACKUP = join(homedir(), ".config", "agents-rulebook", "worktree-copies");
 
 const args = process.argv.slice(2);
@@ -71,7 +84,8 @@ function main() {
     cwd = ev.cwd || cwd;
     if (ev.hook_event_name === "PostToolUse") {
       edited = ev.tool_input?.file_path || ev.tool_response?.filePath || "";
-      if (!FILES.some((f) => edited.endsWith("/" + f))) return;
+      const watched = [...FILES, ...MERGE.map((m) => m.file)];
+      if (!watched.some((f) => edited.endsWith("/" + f))) return;
       cwd = dirname(edited);
     }
   }
@@ -89,7 +103,7 @@ function main() {
   const targets = fanOut ? others.filter((t) => existsSync(t)) : top === project ? [] : [top];
   if (!targets.length && !hook) say(all ? "no worktrees" : "this is the main checkout — nothing to refresh from");
 
-  let changed = 0;
+  let changed = 0, leftAlone = 0;
   let rulesReplaced = false;
   for (const tree of targets) {
     for (const f of FILES) {
@@ -116,8 +130,41 @@ function main() {
       copyFileSync(source, dest);
       if (f !== ".claude/rulebook.json") rulesReplaced = true;
     }
+    for (const { file: f, key } of MERGE) {
+      const source = join(project, f), dest = join(tree, f);
+      if (!existsSync(source)) continue;
+      if (tryGit(tree, "ls-files", "--error-unmatch", "--", f) !== null) continue; // tracked: follows its branch
+      if (tryGit(tree, "check-ignore", "-q", "--", f) === null) continue;          // not ignored: not ours to write
+      const readJson = (path) => { try { return JSON.parse(readFileSync(path, "utf8")); } catch { return null; } };
+      const src = readJson(source);
+      if (!src || src[key] === undefined) continue; // the project has nothing to hand down
+      const cur = present(dest) ? readJson(dest) : {};
+      // Hand-edited into invalid JSON, or not an object: say so and leave it. Claude
+      // Code would refuse to read it either way, and overwriting loses the edit.
+      if (cur === null || typeof cur !== "object" || Array.isArray(cur)) {
+        leftAlone++;
+        say(`${basename(tree)}: ${f} is not a JSON object — left alone`);
+        continue;
+      }
+      if (JSON.stringify(cur[key]) === JSON.stringify(src[key])) continue;
+      const why = !present(dest) ? "was missing" : cur[key] === undefined ? `had no ${key}` : `${key} was stale`;
+      changed++;
+      say(`${basename(tree)}: ${f} ${why}${dry ? " — would merge" : " — merged"}`);
+      if (dry) continue;
+      // Everything but `key` is kept, so permissions collected inside the tree
+      // survive; the previous file is still backed up, because a merge that goes
+      // wrong should be recoverable like a replaced copy is.
+      if (present(dest)) {
+        const saved = join(BACKUP, basename(tree), f);
+        mkdirSync(dirname(saved), { recursive: true });
+        copyFileSync(dest, saved);
+      }
+      mkdirSync(dirname(dest), { recursive: true });
+      writeFileSync(dest, JSON.stringify({ ...cur, [key]: src[key] }, null, 2) + "\n");
+    }
   }
-  if (!hook && targets.length && !changed) say("up to date");
+  // "up to date" after a file was refused would read as the refusal being fine.
+  if (!hook && targets.length && !changed) say(leftAlone ? `nothing changed; ${leftAlone} file(s) left alone, see above` : "up to date");
   // SessionStart stdout lands in the session's context. The instructions were
   // probably loaded from the old file, so the session is told to read it again.
   if (hook && !edited && rulesReplaced) {
