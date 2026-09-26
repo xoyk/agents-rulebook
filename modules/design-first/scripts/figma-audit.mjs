@@ -16,6 +16,11 @@
  * .claude/rulebook.json, then .env. The token comes from FIGMA_TOKEN or .env,
  * and never from anywhere a repository can reach.
  *
+ * --from <dir> reads saved API responses instead of the network: <dir>/nodes.json
+ * is what /v1/files/<key>/nodes answered, and <dir>/file.json, if present, what
+ * /v1/files/<key>?depth=2 answered. No token and no file key are needed then,
+ * which is what lets the rules be tested against invented fixtures.
+ *
  * Exits 1 when it finds a fault that gates a promotion; a stale base fill is
  * printed but does not fail the run, because nobody can see one. Exits 0 and
  * says so when the frames are clean.
@@ -44,9 +49,36 @@ function readEnvFile() {
   }
 }
 
+/* Flags that take a value; everything else on the command line is a node id. */
+const VALUE_FLAGS = new Set(['--file', '--from']);
+
+function flagValue(flag) {
+  const i = process.argv.indexOf(flag);
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : null;
+}
+
+function nodeIdArgs() {
+  const ids = [];
+  for (let i = 2; i < process.argv.length; i += 1) {
+    if (VALUE_FLAGS.has(process.argv[i])) { i += 1; continue; }
+    ids.push(process.argv[i].replace('-', ':'));
+  }
+  return ids;
+}
+
+const SAVED = flagValue('--from');
+
+function readSaved(name) {
+  try {
+    return JSON.parse(readFileSync(join(SAVED, name), 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
 function readFileKey() {
-  const i = process.argv.indexOf('--file');
-  if (i >= 0 && process.argv[i + 1]) return process.argv[i + 1];
+  const flagged = flagValue('--file');
+  if (flagged) return flagged;
   if (process.env.FIGMA_FILE_KEY) return process.env.FIGMA_FILE_KEY;
   if (FIGMA_CONFIG.file) return FIGMA_CONFIG.file;
   const external = fromExternal('filePath');
@@ -199,13 +231,19 @@ function readToken() {
   );
 }
 
-async function fetchNodes(token, ids) {
-  const url = `https://api.figma.com/v1/files/${readFileKey()}/nodes?ids=${ids.join(',')}`;
-  const response = await fetch(url, { headers: { 'X-Figma-Token': token } });
-  if (!response.ok) {
-    throw new Error(`Figma answered ${response.status} ${response.statusText} for ${ids.join(', ')}`);
+async function fetchNodes(ids) {
+  let body;
+  if (SAVED) {
+    body = readSaved('nodes.json');
+    if (!body) throw new Error(`--from ${SAVED}: no readable nodes.json there.`);
+  } else {
+    const url = `https://api.figma.com/v1/files/${readFileKey()}/nodes?ids=${ids.join(',')}`;
+    const response = await fetch(url, { headers: { 'X-Figma-Token': readToken() } });
+    if (!response.ok) {
+      throw new Error(`Figma answered ${response.status} ${response.statusText} for ${ids.join(', ')}`);
+    }
+    body = await response.json();
   }
-  const body = await response.json();
   const missing = ids.filter((id) => !body.nodes[id.replace('-', ':')]?.document);
   if (missing.length) throw new Error(`No such node in the file: ${missing.join(', ')}`);
   return body.nodes;
@@ -743,13 +781,9 @@ function reportByRule(items) {
 }
 
 async function main() {
-  const flagged = process.argv.indexOf('--file');
-  const ids = process.argv
-    .slice(2)
-    .filter((a, i) => a !== '--file' && i + 2 !== flagged + 1)
-    .map((id) => id.replace('-', ':'));
+  const ids = nodeIdArgs();
   if (!ids.length) {
-    console.error('Usage: figma-audit.mjs [--file <key>] <node-id> [node-id...]');
+    console.error('Usage: figma-audit.mjs [--file <key> | --from <dir>] <node-id> [node-id...]');
     process.exit(2);
   }
 
@@ -765,7 +799,7 @@ async function main() {
   }
   if (!ACCENT_GROUNDS.size || !MOBILE_PALETTE.size) console.log('');
 
-  const nodes = await fetchNodes(readToken(), ids);
+  const nodes = await fetchNodes(ids);
   const found = [];
   let scanned = 0;
 
