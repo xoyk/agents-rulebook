@@ -204,6 +204,8 @@ node ~/.claude/skills/agents-init/modules/design-first/scripts/figma-audit.mjs <
 
 It fetches the given nodes — a frame, a section or a whole page — through the Figma REST API and reports what the canvas does not show. It exits `0` when nothing blocks, `1` on a blocking finding, and `2` when it could not run.
 
+`--from <dir>` reads saved responses instead — `nodes.json` from `/v1/files/<key>/nodes`, and optionally `file.json` from `/v1/files/<key>?depth=2` — and needs neither a token nor a file key. The rules are tested that way, against invented canvases: `node --test modules/design-first/scripts/test/figma-audit.test.mjs`.
+
 | Rule | What it catches |
 |---|---|
 | `black bound paint` | A paint bound to a variable that still carries a black literal: the binding did not resolve, and the frame renders black. |
