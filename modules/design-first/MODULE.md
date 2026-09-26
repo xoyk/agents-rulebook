@@ -79,10 +79,35 @@ everything drawn has reached the code.**
 4. **Promote only after the feature is accepted on a real build.** A green
    section is approved, not accepted: green says the next move is the code's,
    and acceptance is the user's word on the running build. Then move the
-   current production frames to `Legacy`, put the new ones in their place, and
-   delete the now-empty `WIP` section. Exploration — rejected options,
-   comparison boards — goes to `Legacy` too: that is where the answer to "why
-   is it like this?" belongs.
+   section's own components to the design library, as the next section sets
+   out; move the current production frames to `Legacy`, put the new ones in
+   their place, and delete the now-empty `WIP` section. Exploration —
+   rejected options, comparison boards — goes to `Legacy` too: that is where
+   the answer to "why is it like this?" belongs.
+
+<!-- rule:component-promotion -->
+### A section's components are promoted with it
+
+While a feature is being drawn, the components it invents live as local
+masters inside its `WIP` section. That is right: they are not agreed yet, and an
+unapproved component has no business in anyone's asset panel. It stops being
+right at promotion. Frames that reach production still pointing at masters in a
+`WIP` section depend on a draft that is about to be deleted.
+
+So the masters go first, in this order:
+
+1. Publish the section's new components to the shared design library.
+2. Re-point the section's instances at the published versions.
+3. Move the frames into production, as in step 4 above.
+4. Delete the local masters nothing instantiates any more. Keep only those a
+   `Legacy` or rejected section still needs in order to render.
+
+**Copy the masters into the library, never cut them.** Cutting looks like the
+same move and is not: every instance still pointing at a cut master is left
+pointing at a component that no longer exists, and Figma gives no warning — the
+frames look exactly as they did until somebody fixes the component and the fix
+reaches none of them. A copy leaves the old instances whole until step 2 has
+moved them, and step 4 deletes what is left once nothing depends on it.
 
 <!-- rule:archiving -->
 ### Archiving
