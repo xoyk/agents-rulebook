@@ -318,6 +318,63 @@ function blackBoundPaints(node, frame, found) {
 }
 
 /*
+ * Fault 12 — a label painted with a literal instead of a token.
+ *
+ * Painting (MODULE.md) keeps a colour map for text of its own — white means
+ * the primary text token — and every rule here judges the colour a label
+ * shows. None asks where the colour came from, and a literal is the one that
+ * drifts: it looks right on the day it is typed, and the next change to the
+ * token repaints every label except that one. Nothing on the canvas tells a
+ * bound #f0f0f0 from a typed one.
+ *
+ * Judged per character, like everything else about text here: a run's own
+ * paint when it has one, the base fill otherwise, so a base nobody renders is
+ * not reported (that is fault 3's business). A shared colour style counts as a
+ * token — it is how a plan without variables names a colour. Fault 1 already
+ * covers a bound paint whose binding did not resolve.
+ *
+ * A project that has no colour tokens at all turns this off in
+ * .claude/rulebook.json with "textTokens": false, and main() says so on every
+ * run rather than letting a rule that did not run read as a pass.
+ */
+const TEXT_TOKENS = FIGMA_CONFIG.textTokens !== false;
+
+function textColourNotFromToken(node, frame, found) {
+  if (!TEXT_TOKENS || node.type !== 'TEXT') return;
+  const characters = node.characters ?? '';
+  if (!characters.trim().length || isPictographic(characters)) return;
+
+  const visibleSolid = (fills) => (fills ?? []).find((f) => f.type === 'SOLID' && f.visible !== false);
+  const base = visibleSolid(node.fills);
+  const baseIsToken = Boolean(base?.boundVariables?.color || node.boundVariables?.fills?.length || node.styles?.fill);
+  const table = node.styleOverrideTable ?? {};
+  const overrides = node.characterStyleOverrides ?? [];
+  const literals = new Set();
+  let runs = 0;
+
+  for (let index = 0; index < characters.length; index += 1) {
+    const id = overrides[index];
+    const override = id ? table[String(id)] : null;
+    const run = visibleSolid(override?.fills);
+    if (run) {
+      runs += 1;
+      if (!run.boundVariables?.color && !override.boundVariables?.fills?.length) literals.add(toHex(run.color));
+    } else if (base && !baseIsToken) {
+      literals.add(toHex(base.color));
+    }
+  }
+  if (!literals.size) return;
+
+  const mixed = runs > 0 && runs < characters.length;
+  found.push({
+    rule: 'text colour not from a token',
+    frame,
+    node: label(node),
+    detail: `${[...literals].join(', ')} typed as a literal, no variable or colour style behind it${mixed ? ' (in one run of several)' : ''}`,
+  });
+}
+
+/*
  * A label made only of pictographs is not text this rule can judge.
  *
  * An emoji brings its own colours; the node's fill paints nothing and is
@@ -927,6 +984,7 @@ function walk(node, ancestry, frame, found) {
   if (node.visible === false) return;
   blackBoundPaints(node, frame, found);
   darkTextOffAccent(node, ancestry, frame, found);
+  textColourNotFromToken(node, frame, found);
   textMatchesGround(node, ancestry, frame, found);
   textTooCloseToGround(node, ancestry, frame, found);
   driftedAbsoluteLayers(node, frame, found);
@@ -978,7 +1036,11 @@ async function main() {
     console.log("note: figma.palette is not set, so a leftover in this design's own");
     console.log('      colours is reported alongside debris from an older one.');
   }
-  if (!ACCENT_GROUNDS.size || !MOBILE_PALETTE.size) console.log('');
+  if (!TEXT_TOKENS) {
+    console.log('note: figma.textTokens is false, so a label painted with a literal colour');
+    console.log('      instead of a variable or colour style is not reported.');
+  }
+  if (!ACCENT_GROUNDS.size || !MOBILE_PALETTE.size || !TEXT_TOKENS) console.log('');
 
   const nodes = await fetchNodes(ids);
   const found = [];

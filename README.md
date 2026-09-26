@@ -210,6 +210,7 @@ It fetches the given nodes — a frame, a section or a whole page — through th
 |---|---|
 | `black bound paint` | A paint bound to a variable that still carries a black literal: the binding did not resolve, and the frame renders black. |
 | `dark text off accent` | Dark text on a dark ground. |
+| `text colour not from a token` | A label, or one run of it, painted with a literal colour — no variable and no colour style behind it. |
 | `text the colour of its ground` | A label exactly the colour of what it sits on. |
 | `text too close to its ground` | A label under the contrast floor against its ground. The ground is searched among shapes painted below the label as well as its parents. |
 | `stale base fill` | A base fill left under a fully overridden label. Advisory only: it renders nothing until the text grows. |
@@ -232,6 +233,7 @@ It reads its settings from the project's `.claude/rulebook.json`, under `figma`:
 | `palette` | The design's own colours. A leftover in one of them is not reported as debris from an older palette. |
 | `accentGrounds` | Grounds on which dark text is intended. |
 | `darkTextLuminance` | Below this luminance text counts as dark. Default `0.4`, which suits light designs; a dark design needs a much lower value or it reports its own hint colour. |
+| `textTokens` | `false` for a design with no colour tokens at all, which turns off `text colour not from a token`; every run then says it is off. Default `true`. |
 | `minContrast` | The contrast floor. Default `1.6` — not an accessibility bar, a "cannot be read at all" bar. |
 
 The file key comes from `--file`, then `FIGMA_FILE_KEY`, then `figma.file`, then `figma.filePath`, then `FIGMA_FILE_KEY` in the project's `.env`. The token comes from `FIGMA_TOKEN`, then `figma.tokenPath`, then `.env`, then `"env": { "FIGMA_TOKEN": ... }` in `~/.claude/settings.json`, which also puts it in front of every agent. A value found this way is never printed.
