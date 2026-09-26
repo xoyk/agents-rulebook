@@ -21,7 +21,12 @@ everything drawn has reached the code.**
 2. **Create a section** named `<state> WIP — <feature>` and draw the new
    versions inside it, copied from the production frames. The state is a
    coloured circle so it reads from the canvas and from the layers list:
-   🟡 drawing, 🔵 waiting for approval, 🟢 in code, waiting for acceptance.
+   🟡 drawing, 🔵 waiting for approval, 🟢 approved — ready to code, and green
+   from then on, through implementation and acceptance on a build. The state
+   says whose move it is, so it only moves forward: once the approval has been
+   given the section never goes back to 🔵. A correction or a repair inside an
+   approved section is not a new request for approval and leaves the state
+   alone.
 
    The first thing in the section is a **`Brief` card**, and it is a table
    rather than a paragraph: a narrow left column of labels, dimmed so the
@@ -42,7 +47,8 @@ everything drawn has reached the code.**
    - **owner** — one name. The line of work that opened the section owns it,
      and other sections are left alone unless asked.
    - **state** — the same coloured circle as the section name, then the state
-     in words and what is drawn so far.
+     in words and how far the work has got: what is drawn, and once the
+     section is green, what is built and whether it has been accepted.
 
    It is what makes a section left open for three weeks readable by someone who
    was not there, and the fixed row names are the point: prose lets a skipped
@@ -56,7 +62,9 @@ everything drawn has reached the code.**
    be their parent; the section then reads as empty and its neighbours look
    free when they are not. After placing frames, assert that the section's
    `absoluteBoundingBox` contains every child's, and grow it if not.
-4. **Promote only after the feature is accepted on a real build.** Move the
+4. **Promote only after the feature is accepted on a real build.** A green
+   section is approved, not accepted: green says the next move is the code's,
+   and acceptance is the user's word on the running build. Then move the
    current production frames to `Legacy`, put the new ones in their place, and
    delete the now-empty `WIP` section. Exploration — rejected options,
    comparison boards — goes to `Legacy` too: that is where the answer to "why
@@ -201,4 +209,5 @@ four. Everyone had the rule; one had the thing that enforces it.
 No branches, no merges. A `WIP` section belongs to the line of work that opened
 it: put an `Owner:` line in its `Brief` and leave other sections alone unless
 asked. A section renamed under its own brief — 🟢 on the canvas, "nothing is
-built" in the words — is what ignoring that costs.
+built" in the words, back when green still meant "in code" — is what ignoring
+that costs.
