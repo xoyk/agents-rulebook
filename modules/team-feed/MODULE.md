@@ -1,13 +1,14 @@
 <!-- rule:team-feed -->
 ## The team feed
 
-{{team feed channel, e.g. #changes in the team chat}} is a feed of what changed,
+{{team feed channel, e.g. #changes in the team's messenger}} is a feed of what changed,
 and each entry in it is one event in one message. When a piece of work ends with
 something a teammate would be surprised not to know next week — a change merged,
 a release live, a design approved — the closing answer offers a ready message for
 it, just above the three-line report. **It is posted only after the user says
-yes to that message**, through the chat tool the session has, or pasted by the
-user where it has none. A yes to one message is not a yes to the next: posting
+yes to that message**, through whatever messenger the team uses — Slack,
+Telegram, Mattermost, anything with a channel — by the session's tool for it, or
+pasted by the user where the session has none. A yes to one message is not a yes to the next: posting
 is sending on the user's behalf, which the core keeps as theirs.
 
 - **One sentence, past tense, then a link.**
@@ -34,5 +35,5 @@ For example: `✅ Search keeps its filters when you come back to the list. — <
 
 One project opened such a channel on 2026-09-25, because its news was scattered
 across three topic channels and the bots' channels, and nobody saw the whole
-week in one place. The rule reached the canon after a single day of trial there;
-the first time it turns out wrong, that story goes here.
+week in one place. It worked from the first day and was taken into the canon on
+2026-09-26; the first time it turns out wrong, that story goes here.
