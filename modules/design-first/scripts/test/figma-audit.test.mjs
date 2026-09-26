@@ -133,7 +133,7 @@ test('a frame that slipped below its row blocks', () => {
 
 test('a caption that wrapped pushes its frame down inside an auto-layout row', () => {
   const cell = (caption, x, frameY) => frame(`Cell / ${caption}`, x, 100, 400, 900, [
-    text(caption, x, 100), screen(caption, x, frameY),
+    text(caption, x, 100, bound('#16171a')), screen(caption, x, frameY),
   ], { layoutMode: 'VERTICAL', fills: [] });
   const row = (secondY) => section('Feature · pancake timer', 0, 0, 2000, 2000, [
     frame('Row / main', 100, 100, 1000, 900, [cell('Batter', 100, 120), cell('Flip', 600, secondY)],
@@ -144,6 +144,17 @@ test('a caption that wrapped pushes its frame down inside an auto-layout row', (
   const drifted = run(row(136));
   assert.equal(drifted.code, 1, drifted.out);
   assert.match(drifted.out, /Row \/ main: Flip \[FRAME\] — starts 16 px below «Batter» beside it/);
+});
+
+test('a caption on a light section is judged against the section, not against nothing', () => {
+  const board = (fill) => ({ ...section('Feature · pancake timer', 0, 0, 2000, 2000, [
+    frame('Row / main', 100, 100, 1000, 200, [text('A1 · Batter', 100, 100, bound('#16171a'))], { fills: [] }),
+  ]), fills: [bound(fill)] });
+  const light = run(board('#fff1c2'));
+  assert.equal(light.code, 0, light.out);
+  const dark = run(board('#101010'));
+  assert.equal(dark.code, 1, dark.out);
+  assert.match(dark.out, /#16171a on #101010/);
 });
 
 /* ---- text colour not from a token ---- */
