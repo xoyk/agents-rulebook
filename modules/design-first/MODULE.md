@@ -112,7 +112,8 @@ moved them, and step 4 deletes what is left once nothing depends on it.
 <!-- rule:archiving -->
 ### Archiving
 
-Whenever a production frame is replaced:
+Whenever a production frame is replaced — at promotion, or by a direct edit the
+user asked for:
 
 1. Copy the current frame into `Legacy`, placed last in its row.
 2. Rename the copy with a trailing `legacy-v1`, then `-v2`, and so on.
@@ -130,6 +131,20 @@ line with what was already decided is not that: a token applied where it was
 missed, a padding never set, an invisible leftover removed. Nothing was decided
 differently, so there is nothing to explain, and the copy is one more frame
 between the reader and the ones that do explain something.
+
+One project learned this from both sides on 2026-08-25, in a single day: nine
+tab-switch wrappers shared one padding bug, whose nine archived copies would have
+taught nobody anything, and four sign-up frames were archived before it turned
+out they were not changing at all, so the copies had to be deleted again as
+debris.
+
+**A repair still takes the `✅` off.** Step 3 is about approval, not history,
+and the two answer different questions. `Legacy` asks whether anything was
+decided differently — after a repair, no, so no copy. The `✅` says the user
+approved this frame as it stands — after a repair it no longer stands as it was,
+however small the change, so the mark waits until they have seen it. It is a
+mark on one frame, not the state of a `WIP` section, which a repair leaves
+alone.
 
 <!-- rule:placement -->
 ### Placement
