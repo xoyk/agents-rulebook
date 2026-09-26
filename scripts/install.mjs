@@ -189,10 +189,15 @@ function install(root) {
   });
 
   // ---------------------------------------------------------------- CLAUDE.md
+  // Claude Code 2.1.282 loads AGENTS.md by itself — measured on 26 September
+  // 2026 with a code word in AGENTS.md and no CLAUDE.md — and does not load it
+  // twice when CLAUDE.md imports it as well. So the import is for older
+  // versions, and a CLAUDE.md of the project's own without it is not a gap: the
+  // first version of this script called it one, and the verdict was wrong.
   const claude = join(root, "CLAUDE.md");
   if (!existsSync(claude)) act("CLAUDE.md", "one line, @AGENTS.md", () => writeFileSync(claude, "@AGENTS.md\n"));
   else if (/^@AGENTS\.md\s*$/m.test(readFileSync(claude, "utf8"))) report("ok", "CLAUDE.md", "imports @AGENTS.md");
-  else report("hand", "CLAUDE.md", "exists without an @AGENTS.md line — Claude Code will not read the rulebook; add the line or say why not");
+  else report("ok", "CLAUDE.md", "the project's own, without the import; current Claude Code reads AGENTS.md anyway");
 
   // ---------------------------------------------------------------- BACKLOG.md
   const backlog = join(root, "BACKLOG.md");
