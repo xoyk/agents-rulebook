@@ -103,7 +103,7 @@ function main() {
   const targets = fanOut ? others.filter((t) => existsSync(t)) : top === project ? [] : [top];
   if (!targets.length && !hook) say(all ? "no worktrees" : "this is the main checkout — nothing to refresh from");
 
-  let changed = 0;
+  let changed = 0, leftAlone = 0;
   let rulesReplaced = false;
   for (const tree of targets) {
     for (const f of FILES) {
@@ -142,6 +142,7 @@ function main() {
       // Hand-edited into invalid JSON, or not an object: say so and leave it. Claude
       // Code would refuse to read it either way, and overwriting loses the edit.
       if (cur === null || typeof cur !== "object" || Array.isArray(cur)) {
+        leftAlone++;
         say(`${basename(tree)}: ${f} is not a JSON object — left alone`);
         continue;
       }
@@ -162,7 +163,8 @@ function main() {
       writeFileSync(dest, JSON.stringify({ ...cur, [key]: src[key] }, null, 2) + "\n");
     }
   }
-  if (!hook && targets.length && !changed) say("up to date");
+  // "up to date" after a file was refused would read as the refusal being fine.
+  if (!hook && targets.length && !changed) say(leftAlone ? `nothing changed; ${leftAlone} file(s) left alone, see above` : "up to date");
   // SessionStart stdout lands in the session's context. The instructions were
   // probably loaded from the old file, so the session is told to read it again.
   if (hook && !edited && rulesReplaced) {
