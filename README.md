@@ -48,7 +48,7 @@ Updating the canon on this machine is `git pull` in the skill directory — a sk
 | `templates/AGENTS.core.md` | Always installed. Reporting back, saying what actually happened, names, the backlog, working in parallel and what worktrees do not fix, commits, pushing, merging and releasing, things only the user does. |
 | `templates/AGENTS.tail.md` | Always installed, always last. How to extend the file, section anchors, canon precedence. |
 | `templates/BACKLOG.md` | The backlog a project starts with. |
-| `modules/design-first/` | Code starts only after an approved frame: a `WIP` section per piece of work, archiving, placement, the Figma painting traps that ship invisible text, one owner for a shared design file — and `scripts/figma-audit.mjs`, which checks frames for all of it. |
+| `modules/design-first/` | Code starts only after an approved frame: a `WIP` section per piece of work, promoting its components with it, archiving, placement, the Figma painting traps that ship invisible text, one owner for a shared design file — plus `scripts/figma-audit.mjs`, which checks frames for all of it, and `skills/figma-wip-section/SKILL.md`, which says how a `WIP` section is built. |
 | `modules/release/` | Release notes generated from per-audience commit trailers instead of remembered, the one tree a release is cut in, build numbers, and finishing a release. The store-specific sections are deleted where there is no store. |
 | `modules/publishing/` | A published file cannot be withdrawn, only overwritten; anything shown in public is drawn from invented data at the source. |
 | `scripts/install.mjs` | Wires an assembled `AGENTS.md` into its project: stamp, `BACKLOG.md`, page, hooks, registry. `--git-init` first creates a local repository where there is none (no remote, no commit); `--check` writes nothing and lists what is missing; `--check --all` does it for the whole registry; `--pre-commit` prints the git hook for adding to one that is already there. |
@@ -61,7 +61,7 @@ Updating the canon on this machine is `git pull` in the skill directory — a sk
 
 ## A module is a folder
 
-`modules/<name>/MODULE.md` is the text that gets installed into a project. `modules/<name>/scripts/` holds the tools that serve those rules, and they stay here.
+`modules/<name>/MODULE.md` is the text that gets installed into a project. `modules/<name>/scripts/` holds the tools that serve those rules, and `modules/<name>/skills/` the procedures an agent reads to carry them out; both stay here.
 
 Only text is copied into a project. A tool is invoked from this directory by path:
 
@@ -76,7 +76,7 @@ A project may keep a module's rule but not its text — holding the mechanics so
 ### Adding a module
 
 1. Create `modules/<name>/MODULE.md`. Every `##` and `###` heading carries a `<!-- rule:<id> -->` anchor above it, and the id is not used anywhere else in the canon.
-2. Put its tools, if any, in `modules/<name>/scripts/`, reading everything project-specific from the project at run time.
+2. Put its tools, if any, in `modules/<name>/scripts/` and its procedures in `modules/<name>/skills/`, reading everything project-specific from the project at run time. The rule text names each one by its path under the skill directory, or nobody will find it.
 3. Add the module to the assembly order and to the questions in `SKILL.md`, and to the table above.
 4. Commit it with the incident that made it necessary. A module travels whole because it brings its own stories with it.
 
@@ -232,6 +232,32 @@ It reads its settings from the project's `.claude/rulebook.json`, under `figma`:
 The file key comes from `--file`, then `FIGMA_FILE_KEY`, then `figma.file`, then `figma.filePath`, then `FIGMA_FILE_KEY` in the project's `.env`. The token comes from `FIGMA_TOKEN`, then `figma.tokenPath`, then `.env`, then `"env": { "FIGMA_TOKEN": ... }` in `~/.claude/settings.json`, which also puts it in front of every agent. A value found this way is never printed.
 
 Tune a new project against a page you know is clean. An audit that fails on a healthy file stops being read, and a rule nobody reads catches nothing.
+
+## The WIP section tool
+
+```text
+~/.claude/skills/agents-init/modules/design-first/skills/figma-wip-section/SKILL.md
+```
+
+The design-first rule says what a `WIP` section must say; this file says what it must look like — duplicated from a template, built from the kit's masters, laid out on a fixed spacing scale, tinted by its state, every reference a link. It is a procedure for an agent rather than a script, and it is a tool in the sense above: read from here, never copied, the same in every project. It is not listed as a skill of its own — the skill is `agents-init`, and this file sits inside it — so the module's rule text names the path instead.
+
+What it needs to know about a project it reads from `.claude/rulebook.json`, under `figma.wip`, beside the audit's keys. The tool's own file carries the same table with an example, because that is the copy an agent reads.
+
+| Key | Meaning |
+|---|---|
+| `wip.file` | The file the `WIP` page is in. Defaults to `figma.file`. |
+| `wip.page` | The page holding the sections. Defaults to `WIP`. |
+| `wip.template` | Node id of the section template to duplicate. |
+| `wip.masters` | Node ids of the kit's masters: `banner`, `brief`, `rowLabel`, `caption`, `note`. |
+| `wip.sharedKit` | Node id of the section holding masters that several features instance. |
+| `wip.library` | The design library the frames bind to, or a map from product to library when one `WIP` page serves several products. |
+| `wip.font` | The product's UI font family. |
+| `wip.stateFills` | The colour variable for each state: `drawing`, `review`, `approved`, `parked`. |
+| `wip.ticketLink` | URL shape for a ticket key, with `{key}`. Only where there is a tracker. |
+| `wip.codeLink` | URL shape for a code reference, with `{repo}`, `{branch}`, `{path}`, `{line}`. |
+| `wip.ticketStatuses` | The tracker's status for each milestone of a section: `brief`, `design`, `review`, `development`. Only where there is a tracker. |
+
+Every key holds a node id, a name or a URL shape — nothing secret. A missing one is reported by the agent rather than guessed.
 
 ## Vendoring the templates into a project
 

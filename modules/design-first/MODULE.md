@@ -16,6 +16,20 @@ has — are not the drafting surface, and they do not share a page with drafts.
 A `WIP` page holds one section per open feature. **An empty `WIP` page means
 everything drawn has reached the code.**
 
+What follows is what a section must *say*. What it must *look like* — the
+template it is duplicated from, the masters it instances, the layout grid, the
+fill that shows its state, the links — is a tool of this module, read from the
+skill directory rather than copied here:
+
+```text
+~/.claude/skills/agents-init/modules/design-first/skills/figma-wip-section/SKILL.md
+```
+
+Read it before opening or reshaping a section. It takes this project's file,
+template, masters and colours from the `figma.wip` block of
+`.claude/rulebook.json`, and a section is not built by hand from primitives
+while a template exists.
+
 1. **Name the screens it touches** before drawing anything. That list is what
    gets promoted at step 4.
 2. **Create a section** named `<state> WIP — <feature>` and draw the new

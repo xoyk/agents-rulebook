@@ -17,9 +17,11 @@ The text lives next to this file: `templates/AGENTS.core.md`,
 
 **A module is a folder, not a file.** `modules/design-first/MODULE.md` is the
 text that gets installed into a project; `modules/design-first/scripts/` holds
-the tools that serve those rules and they stay here. Only text is copied into a
-project. A script is invoked from this directory by path, so five projects share
-one copy and a fix reaches all of them without any sync at all.
+the tools that serve those rules and `modules/design-first/skills/` the
+procedures an agent reads to carry them out, and both stay here. Only text is
+copied into a project. A script is invoked, and a procedure read, from this
+directory by path, so five projects share one copy and a fix reaches all of
+them without any sync at all.
 
 **A project that keeps a module's rule but not its text has to name the module's
 tools itself.** Declining the text is legitimate — a project may hold the
