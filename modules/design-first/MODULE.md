@@ -57,6 +57,20 @@ everything drawn has reached the code.**
    with a drawn scene wants `references` and `light`, a project with a design
    linter wants `audit`, holding the findings it declares deliberate. Adding a
    row is fine; dropping one is not.
+
+   **A project with a tracker adds a `ticket` row**, straight after **entry
+   points**. It is optional in the canon — a project without a tracker has
+   nothing to put there, and leaving it out drops nothing — and once a project
+   has added it, it is as mandatory as the rest. It names the tracker's issue
+   for the feature the design is a phase of: that one issue, never a second,
+   design-only one beside it, because two issues for one piece of work drift
+   apart and only one of them gets read. **The section's state and the issue's
+   status then move together, in the same step:** the flip to 🔵 moves the
+   issue to its review status, the flip to 🟢 moves it to development, and
+   neither moves back. The tracker is what the rest of the team reads, and an
+   issue left behind tells them the wrong thing — one project had a feature
+   sitting in its briefing status with four rows of frames already handed over
+   for review.
 3. **Check the section's own coordinates against the frames inside it.** A
    section can be created in one place while its frames sit far away and still
    be their parent; the section then reads as empty and its neighbours look
