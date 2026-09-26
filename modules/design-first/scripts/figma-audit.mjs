@@ -540,12 +540,61 @@ function defaultSectionFill(section, found) {
   });
 }
 
+/*
+ * Fault 10 — sections that grew into each other.
+ *
+ * Sections are placed by hand and nothing arranges them: a section has no
+ * auto-layout and a frame cannot hold one, so on a page several people edit
+ * they grow into their neighbours. The one underneath is hidden until somebody
+ * scrolls onto it, and every rule above still calls both clean, because each
+ * judges what is inside a section and none looks at where it sits. Placement
+ * (MODULE.md) says occupancy is read from absoluteBoundingBox, never from the
+ * order of the children; this is the same measure, taken after the fact.
+ *
+ * Only sections are compared. Content hanging past its own section is fault 5,
+ * and a frame lying loose on a page is not somebody's section to move.
+ */
+function sectionOverlap(a, b) {
+  const A = a.absoluteBoundingBox;
+  const B = b.absoluteBoundingBox;
+  if (!A || !B) return null;
+  const dx = Math.min(A.x + A.width, B.x + B.width) - Math.max(A.x, B.x);
+  const dy = Math.min(A.y + A.height, B.y + B.height) - Math.max(A.y, B.y);
+  /* Half a pixel, as in fault 5: sections set flush against each other touch,
+     they do not overlap. */
+  return dx > 0.5 && dy > 0.5 ? `${Math.round(dx)} × ${Math.round(dy)} px` : null;
+}
+
+const childSections = (container) =>
+  (container.children ?? []).filter((c) => c.type === 'SECTION' && c.visible !== false);
+
+/*
+ * Within what was fetched, every overlap is the audited work's own: a page
+ * audited whole, or sections nested inside the audited one.
+ */
+function sectionsOverlapping(container, found) {
+  const sections = childSections(container);
+  for (let i = 0; i < sections.length; i += 1) {
+    for (let j = i + 1; j < sections.length; j += 1) {
+      const size = sectionOverlap(sections[i], sections[j]);
+      if (!size) continue;
+      found.push({
+        rule: 'sections overlap',
+        frame: sections[i].name,
+        node: label(sections[j]),
+        detail: `the two sections overlap by ${size} — move one to free canvas`,
+      });
+    }
+  }
+}
+
 /* Sections nest, and the audited node may be a page, a section or a frame. */
 function auditSections(node, found) {
   if (node.type === 'SECTION') {
     contentOutsideSection(node, found);
     defaultSectionFill(node, found);
   }
+  if (node.type === 'SECTION' || node.type === 'CANVAS') sectionsOverlapping(node, found);
   for (const child of node.children ?? []) auditSections(child, found);
 }
 
@@ -736,6 +785,71 @@ function textClippedByFrame(node, ancestry, frame, found) {
 }
 
 /*
+ * The neighbours of an audited section are not in the /nodes answer, which
+ * holds only the node asked for. The page they share comes from the file read
+ * two levels deep — the pages and what sits directly on them, no further.
+ */
+async function fetchPages(notes) {
+  if (SAVED) {
+    const body = readSaved('file.json');
+    if (!body) notes.push(`--from ${SAVED} holds no file.json, so no section was compared with its neighbours.`);
+    return body?.document?.children ?? null;
+  }
+  const url = `https://api.figma.com/v1/files/${readFileKey()}?depth=2`;
+  const response = await fetch(url, { headers: { 'X-Figma-Token': readToken() } });
+  if (!response.ok) {
+    notes.push(`Figma answered ${response.status} for the page read, so no section was compared with its neighbours.`);
+    return null;
+  }
+  return (await response.json()).document?.children ?? null;
+}
+
+/*
+ * The page is a shared surface, so an overlap there is reported whoever caused
+ * it — but it gates only when one of the two is the section being audited.
+ * Blocking a promotion over two other people's sections would hand this
+ * section's owner work that is not theirs (MODULE.md, "one owner"); keeping
+ * quiet about it would leave the collision for whoever scrolls onto it.
+ */
+async function neighbourOverlaps(roots, found, notes) {
+  const sections = roots.filter((root) => root.type === 'SECTION');
+  if (!sections.length) return;
+  const pages = await fetchPages(notes);
+  if (!pages) return;
+  const audited = new Set(sections.map((section) => section.id));
+  const seen = new Set();
+  for (const section of sections) {
+    const page = pages.find((p) => (p.children ?? []).some((c) => c.id === section.id));
+    if (!page) {
+      notes.push(`${section.name} does not sit directly on a page, so it was not compared with its neighbours.`);
+      continue;
+    }
+    if (seen.has(page.id)) continue;
+    seen.add(page.id);
+    const onPage = childSections(page);
+    for (let i = 0; i < onPage.length; i += 1) {
+      for (let j = i + 1; j < onPage.length; j += 1) {
+        const size = sectionOverlap(onPage[i], onPage[j]);
+        if (!size) continue;
+        const mine = audited.has(onPage[i].id) ? onPage[i] : audited.has(onPage[j].id) ? onPage[j] : null;
+        const other = mine === onPage[i] ? onPage[j] : onPage[i];
+        found.push(mine ? {
+          rule: 'sections overlap',
+          frame: mine.name,
+          node: label(other),
+          detail: `the two sections overlap by ${size} — move this one to free canvas`,
+        } : {
+          rule: 'sections overlap elsewhere on the page',
+          frame: page.name,
+          node: `${label(onPage[i])} and ${label(onPage[j])}`,
+          detail: `overlap by ${size} — not this section's doing; worth moving whichever arrived last`,
+        });
+      }
+    }
+  }
+}
+
+/*
  * A hidden layer is not on the canvas, so nothing in it can be misread. It is
  * skipped whole, children included. On 12 September 2026 a price list built
  * from one tier component hid the command line in two tiers of three; the
@@ -761,11 +875,13 @@ function walk(node, ancestry, frame, found) {
  * The faults that gate a promotion. Every rule above is printed either way;
  * only these decide the exit code. `stale base fill` is deliberately not among
  * them — it renders nothing, so failing on it would block a promotion over
- * something nobody can see (AGENTS.md, "Painting"). Membership is by exclusion
- * so a rule added later gates by default: a new fault that turns out to be
- * invisible is a smaller surprise than one that silently stops gating.
+ * something nobody can see (AGENTS.md, "Painting"). Neither is an overlap
+ * between two sections this run was not asked about — see neighbourOverlaps.
+ * Membership is by exclusion so a rule added later gates by default: a new
+ * fault that turns out to be invisible is a smaller surprise than one that
+ * silently stops gating.
  */
-const ADVISORY_RULES = new Set(['stale base fill']);
+const ADVISORY_RULES = new Set(['stale base fill', 'sections overlap elsewhere on the page']);
 
 function reportByRule(items) {
   const byRule = new Map();
@@ -801,6 +917,7 @@ async function main() {
 
   const nodes = await fetchNodes(ids);
   const found = [];
+  const notes = [];
   let scanned = 0;
 
   for (const entry of Object.values(nodes)) {
@@ -818,6 +935,11 @@ async function main() {
       walk(target, [], target.name, found);
     }
   }
+  await neighbourOverlaps(Object.values(nodes).map((entry) => entry.document), found, notes);
+
+  /* A check that could not run says so before anything reads as clean. */
+  for (const note of notes) console.log(`note: ${note}`);
+  if (notes.length) console.log('');
 
   if (!found.length) {
     console.log(`Clean: ${scanned} frame(s) audited, nothing found.`);

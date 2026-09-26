@@ -65,3 +65,45 @@ test('--from audits a saved response without a token or a file key', () => {
   assert.equal(code, 0, out);
   assert.match(out, /Clean: 1 frame\(s\) audited/);
 });
+
+/* ---- sections overlap ---- */
+
+const pageOf = (...children) => ({ id: '0:1', type: 'CANVAS', name: 'Drafts', children });
+
+test('an audited section clear of its neighbours passes', () => {
+  const mine = section('Feature · pancake timer', 0, 0, 1000, 1000);
+  const { code, out } = run(mine, { page: pageOf(mine, section('Feature · tea log', 1200, 0, 800, 800)) });
+  assert.equal(code, 0, out);
+  assert.doesNotMatch(out, /overlap/);
+});
+
+test('an audited section that grew into a neighbour blocks', () => {
+  const mine = section('Feature · pancake timer', 0, 0, 1000, 1000);
+  const { code, out } = run(mine, { page: pageOf(mine, section('Feature · tea log', 900, 600, 800, 800)) });
+  assert.equal(code, 1, out);
+  assert.match(out, /sections overlap — 1\n\s+Feature · pancake timer: Feature · tea log \[SECTION\] — the two sections overlap by 100 × 400 px/);
+});
+
+test('two neighbours overlapping each other are reported without blocking', () => {
+  const mine = section('Feature · pancake timer', 0, 0, 1000, 1000);
+  const page = pageOf(mine, section('Feature · tea log', 2000, 0, 800, 800), section('Feature · kite map', 2500, 500, 800, 800));
+  const { code, out } = run(mine, { page });
+  assert.equal(code, 0, out);
+  assert.match(out, /sections overlap elsewhere on the page — 1/);
+  assert.match(out, /do not block/);
+});
+
+test('sections nested inside the audited one are judged without the page', () => {
+  const inner = [section('Row · morning', 0, 0, 600, 400), section('Row · evening', 0, 300, 600, 400)];
+  const mine = section('Feature · pancake timer', 0, 0, 1000, 1000, inner);
+  const { code, out } = run(mine);
+  assert.equal(code, 1, out);
+  assert.match(out, /Row · morning: Row · evening \[SECTION\] — the two sections overlap by 600 × 100 px/);
+  assert.match(out, /note: .*no file\.json/);
+});
+
+test('sections that only touch do not overlap', () => {
+  const mine = section('Feature · pancake timer', 0, 0, 1000, 1000);
+  const { code, out } = run(mine, { page: pageOf(mine, section('Feature · tea log', 1000, 0, 800, 800)) });
+  assert.equal(code, 0, out);
+});
