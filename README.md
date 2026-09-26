@@ -14,7 +14,7 @@ Requirements: `git` and Node 18 or newer. Nothing is installed with npm; every s
 git clone git@github.com:xoyk/agents-rulebook.git ~/.claude/skills/agents-init
 ```
 
-The repository is the skill directory, so that clone is the whole installation. Then, in a project, run `/agents-init` in Claude Code. It asks four questions — what the project is, and whether design, releases and a public page are in the loop — and leaves behind:
+The repository is the skill directory, so that clone is the whole installation. Then, in a project, run `/agents-init` in Claude Code. It asks four questions — what the project is, and whether design, releases and a public page are in the loop — plus a fifth where the directory is not a git repository yet: whether to start a local one (no remote, nothing committed). Then it leaves behind:
 
 | File | What it is |
 |---|---|
@@ -31,7 +31,7 @@ The repository is the skill directory, so that clone is the whole installation. 
 - A worktree no longer gets the rulebook from git. Something else has to put it there, and what that is decides whether the copy stays current — see [Worktrees](#worktrees).
 - The pre-commit hook must not `git add` the page, because adding an ignored path fails and kills the commit. It asks "is the page ignored?" rather than "is it tracked?" — a project keeping the rulebook in git must still be able to add the page on the first commit, before it is tracked — and it skips commits that delete `AGENTS.md`, since there is nothing to render from a file that is leaving. Both guards were paid for on one project on 4 September 2026, the day its rulebook left the tree: the merge carrying it out staged the deletion, the hook rebuilt the page from the departing file, and the commit died. `git add -f` is the wrong way out: it commits a file the project has decided not to carry.
 
-Everything after the questions and the assembly is one script, `scripts/install.mjs`: the stamp, `CLAUDE.md` and `BACKLOG.md` where they are missing, the page, the hooks that fit the project, the registry entry. It does only what is missing, so it can be run again at any time, and it prints one line per step — `ok`, `done`, `skip` with the reason, or `hand` for what it will not decide by itself. To see what a project installed before the script is still missing, without writing anything:
+Everything after the questions and the assembly is one script, `scripts/install.mjs`: the repository where the user agreed to one (`--git-init`), the stamp, `CLAUDE.md` and `BACKLOG.md` where they are missing, the page, the hooks that fit the project, the registry entry. It does only what is missing, so it can be run again at any time, and it prints one line per step — `ok`, `done`, `skip` with the reason, or `hand` for what it will not decide by itself. To see what a project installed before the script is still missing, without writing anything:
 
 ```bash
 node ~/.claude/skills/agents-init/scripts/install.mjs --check --all
@@ -52,7 +52,7 @@ Updating the canon on this machine is `git pull` in the skill directory — a sk
 | `modules/design-first/` | Code starts only after an approved frame: a `WIP` section per piece of work, archiving, placement, the Figma painting traps that ship invisible text, one owner for a shared design file — and `scripts/figma-audit.mjs`, which checks frames for all of it. |
 | `modules/release/` | Release notes generated from per-audience commit trailers instead of remembered, the one tree a release is cut in, build numbers, and finishing a release. The store-specific sections are deleted where there is no store. |
 | `modules/publishing/` | A published file cannot be withdrawn, only overwritten; anything shown in public is drawn from invented data at the source. |
-| `scripts/install.mjs` | Wires an assembled `AGENTS.md` into its project: stamp, `CLAUDE.md`, `BACKLOG.md`, page, hooks, registry. `--check` writes nothing and lists what is missing; `--check --all` does it for the whole registry; `--pre-commit` prints the git hook for adding to one that is already there. |
+| `scripts/install.mjs` | Wires an assembled `AGENTS.md` into its project: stamp, `CLAUDE.md`, `BACKLOG.md`, page, hooks, registry. `--git-init` first creates a local repository where there is none (no remote, no commit); `--check` writes nothing and lists what is missing; `--check --all` does it for the whole registry; `--pre-commit` prints the git hook for adding to one that is already there. |
 | `scripts/stamp-rulebook.mjs` | Writes the stamp. `--basis install` for a fresh copy, `--basis adopted` for a rulebook that was not assembled here, `--check` to list sections that drifted from their stamp without writing anything. |
 | `scripts/sync-rulebook.mjs` | Compares copies with the canon and says what to do with each section; `--apply` takes the mechanical half; `--html` draws every copy on one map. |
 | `scripts/render-rulebook.mjs` | Renders `AGENTS.md` into `.claude/rulebook.html`. Deterministic, so `--check` is a byte compare. `--hook` is the mode the editor hook calls. |
