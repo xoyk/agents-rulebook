@@ -215,10 +215,12 @@ It fetches the given nodes — a frame, a section or a whole page — through th
 | `stale base fill` | A base fill left under a fully overridden label. Advisory only: it renders nothing until the text grows. |
 | `content outside its section` | A section that stopped covering its own content. |
 | `section in the default fill` | A section still in the plain white fill Figma gives a new one. |
+| `sections overlap` | Two sections whose boxes overlap, where one is the audited section or both sit inside what was audited. The audited section's neighbours come from the page, read two levels deep. |
+| `sections overlap elsewhere on the page` | The same between two neighbours, neither of them audited. Advisory only: it is somebody else's section to move. |
 | `layer drifted out of its instance` | An absolutely placed layer hanging outside the instance it belongs to. |
 | `text clipped by its frame` | A label cut off by the frame that clips it. A frame standing for a scrolled list is exempt when its name says so — `scrolls`. |
 
-Every rule except `stale base fill` blocks. A rule added later blocks by default: a new fault that turns out harmless is a smaller surprise than one that silently stops gating.
+Every rule except `stale base fill` and `sections overlap elsewhere on the page` blocks. A rule added later blocks by default: a new fault that turns out harmless is a smaller surprise than one that silently stops gating.
 
 It reads its settings from the project's `.claude/rulebook.json`, under `figma`:
 
