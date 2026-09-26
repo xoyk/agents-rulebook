@@ -33,6 +33,7 @@ existed, and nobody had configured one either.
 
 ```bash
 ls AGENTS.md CLAUDE.md BACKLOG.md 2>/dev/null
+git rev-parse --show-toplevel 2>/dev/null || echo "not a git repository"
 ```
 
 On a project that already carries a rulebook, `node <skill>/scripts/install.mjs
@@ -48,7 +49,7 @@ the template by meaning rather than by heading, and mark everything else
 `<!-- local:<id> -->`. It is a one-off job, and until it is done the copy cannot
 be compared with the canon or with any other project.
 
-### 2. Ask four things, and no more
+### 2. Ask four things, and a fifth only where there is no git
 
 Briefly, as one question through the choice tool:
 
@@ -67,6 +68,19 @@ Briefly, as one question through the choice tool:
    possible to overwrite, and everything shown in public being drawn on invented
    data from the start. Any project with a site, a landing page or a demo wants
    it, not only the ones with a CDN.
+
+5. **Only when step 1 found no repository: whether to start one.** Local only —
+   `git init` on `main`, no remote, nothing committed. Offer "yes" first and
+   mark it recommended: every rule in the core assumes a repository, and so
+   does the pre-commit hook that keeps the page current. The answer yes is
+   `install.mjs --git-init` at step 4; the answer no is a plain run, which
+   skips the git hooks and says so.
+
+   Never run `git init` without asking, however obviously right it looks. On
+   26 September 2026 4FH was installed as a plain directory and the agent
+   initialised it on its own initiative; the repository was wanted, the
+   unasked question was not. A remote is not part of this question at all:
+   where the work becomes visible is decided later, by the user.
 
 Ask nothing else. Everything else is a fill-in-the-blank in the text, and those
 are cheaper to correct later than to guess now.
@@ -97,13 +111,16 @@ and `###` heading carries an anchor above it.
 ### 4. Wire it up with one command
 
 ```bash
-node <skill>/scripts/install.mjs
+node <skill>/scripts/install.mjs              # add --git-init if the answer to question 5 was yes
 ```
 
 Everything after assembly is the same every time, so it is a script rather than
 prose for a model to carry out. It does whatever is missing and leaves alone
 whatever is in place, so running it twice is safe:
 
+- **The repository**, with `--git-init` only, where there is none: `git init`
+  on `main`, no remote, no commit. It comes first, so the git hook below lands
+  in the same run.
 - **The stamp**, `.claude/rulebook.json`, through `stamp-rulebook.mjs` — only
   when there is none. For a rulebook that was not assembled here, pass
   `--basis adopted`.

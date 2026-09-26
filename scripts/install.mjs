@@ -14,6 +14,7 @@
  * Usage, from the project root, after AGENTS.md has been assembled:
  *   node <skill>/scripts/install.mjs                  # do whatever is missing
  *   node <skill>/scripts/install.mjs --basis adopted  # stamp a rulebook not assembled here
+ *   node <skill>/scripts/install.mjs --git-init       # no repository here yet: create a local one first
  *   node <skill>/scripts/install.mjs --check          # say what is missing, write nothing
  *   node <skill>/scripts/install.mjs --check --all    # the same for every project in the registry
  *   node <skill>/scripts/install.mjs --pre-commit     # print the git hook, for adding to one already there
@@ -50,9 +51,14 @@ const USER_SETTINGS = join(process.env.CLAUDE_CONFIG_DIR || join(homedir(), ".cl
 const args = process.argv.slice(2);
 const check = args.includes("--check");
 const all = args.includes("--all");
+const gitInit = args.includes("--git-init");
 const basis = args.includes("--basis") ? args[args.indexOf("--basis") + 1] : "install";
 if (!["install", "adopted"].includes(basis)) {
   console.error(`error: --basis must be 'install' or 'adopted', got '${basis}'.`);
+  process.exit(2);
+}
+if (gitInit && all) {
+  console.error("error: --git-init answers a question asked about one project; it does not go with --all.");
   process.exit(2);
 }
 if (all && !check) {
@@ -177,7 +183,32 @@ function install(root) {
   }
   if (!problems.length) report("ok", "AGENTS.md", "every heading anchored, no {{...}} left");
 
-  const top = tryGit(root, "rev-parse", "--show-toplevel");
+  // ---------------------------------------------------------------- git
+  /*
+   * Every rule in the core assumes a repository, and so do the pre-commit hook
+   * and the worktree hooks, so a project without one is asked whether to start
+   * one — SKILL.md, step 2 — and --git-init is the answer yes. It is local only:
+   * `git init` on branch main, the name the rulebook uses throughout, with no
+   * remote and nothing committed. Adding a remote is a choice about where the
+   * work is visible, and the first commit is the person reading the agreements
+   * and deciding they are right; neither belongs to an install.
+   *
+   * On 26 September 2026 4FH was installed as a plain directory. The script said
+   * `skip pre-commit: not a git repository`, a line that reads like a decision
+   * although nobody had made one, and the agent then ran `git init` on its own
+   * initiative. The init was right and the manner was wrong: whether a directory
+   * becomes a repository is the user's question, and it had not been asked.
+   */
+  let top = tryGit(root, "rev-parse", "--show-toplevel");
+  if (top === null) {
+    if (!gitInit) report("skip", "git", "not a git repository; --git-init creates a local one (no remote, no commit)");
+    else act("git", "local repository on main: no remote, nothing committed", () => {
+      execFileSync("git", ["-C", root, "init", "-q", "-b", "main"], { stdio: "ignore" });
+    });
+    if (gitInit && !check) top = tryGit(root, "rev-parse", "--show-toplevel");
+  } else if (gitInit) {
+    report("ok", "git", `already inside ${home(top)} — --git-init did nothing`);
+  }
   const inGit = top !== null;
   const outOfGit = inGit && tryGit(root, "check-ignore", "-q", "AGENTS.md") !== null;
 
@@ -219,7 +250,8 @@ function install(root) {
     "PostToolUse redraws the page when AGENTS.md is edited", report, act);
 
   // ---------------------------------------------------------------- git hook
-  if (!inGit) report("skip", "pre-commit", "not a git repository");
+  if (!inGit && gitInit) report("todo", "pre-commit", ".githooks/pre-commit, once --git-init has created the repository");
+  else if (!inGit) report("skip", "pre-commit", "not a git repository");
   else if (outOfGit) report("skip", "pre-commit", "AGENTS.md is ignored here: it is never staged, so the hook would have nothing to fire on");
   else preCommit(root, top, report, act);
 
