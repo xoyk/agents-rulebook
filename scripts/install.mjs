@@ -17,6 +17,7 @@
  *   node <skill>/scripts/install.mjs --check          # say what is missing, write nothing
  *   node <skill>/scripts/install.mjs --check --all    # the same for every project in the registry
  *   node <skill>/scripts/install.mjs --pre-commit     # print the git hook, for adding to one already there
+ *   node <skill>/scripts/install.mjs --forget <path>  # take a project out of the registry
  *
  * Every run can be repeated: a step that is already in place is reported `ok`
  * and left alone. Each line starts with what happened to that step:
@@ -24,6 +25,7 @@
  *   done   written by this run            (`todo` under --check: would be written)
  *   skip   does not apply to this project, with the reason
  *   hand   needs a person: this script will not decide it, and says why
+ *   note   worth a look, not a gap: a project nobody has committed to in weeks
  *
  * Exit code: 0 when nothing is left, 1 when something is `hand` (or `todo`
  * under --check), 2 when it could not run.
@@ -33,7 +35,7 @@
  * since the stamp — so an existing stamp is the sync's business, not this one's.
  */
 import { execFileSync } from "node:child_process";
-import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -42,6 +44,17 @@ import { ANCHOR } from "./lib/sections.mjs";
 const SKILL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CONFIG = join(process.env.XDG_CONFIG_HOME || join(homedir(), ".config"), "agents-rulebook");
 const REGISTRY = join(CONFIG, "recipients.json");
+// Written into a registry this script creates, and into one that has no
+// comment yet. The one it replaces said "both computers can share one list":
+// nothing shares it — the file is on one machine, in no repository — and a
+// comment that promises a sync makes a missing project look like a sync bug.
+const REGISTRY_COMMENT =
+  "Projects carrying a copy of the agents-rulebook, on this machine. Not synced and not in git: " +
+  "another computer has its own list, or none. A path that is not here is skipped. " +
+  "install.mjs adds a project; install.mjs --forget <path> takes one out.";
+// A project with no commit for this long is named in --check --all. Not a gap:
+// a quiet project is fine, an archived one is a line nobody meant to keep.
+const QUIET_DAYS = 21;
 const BACKUP = join(CONFIG, "settings-backups");
 // Claude Code's own directory moves with CLAUDE_CONFIG_DIR; the user's hooks go
 // wherever Claude Code will read them.
@@ -70,6 +83,18 @@ const tryGit = (cwd, ...a) => {
   try {
     return execFileSync("git", ["-C", cwd, ...a], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
   } catch { return null; }
+};
+// Real paths, so an entry spelled through a symlink matches what git reports.
+const expand = (p) => {
+  const abs = resolve(p.replace(/^~(?=\/)|^\$HOME(?=\/)/, homedir()));
+  try { return realpathSync(abs); } catch { return abs; }
+};
+// The main checkout of the repository `dir` belongs to: the first entry of
+// `git worktree list`. Null outside git.
+const mainOf = (dir) => {
+  const out = existsSync(dir) ? tryGit(dir, "worktree", "list", "--porcelain") : null;
+  const first = out?.match(/^worktree (.+)$/m)?.[1];
+  return first ? expand(first) : null;
 };
 const readJson = (path) => { try { return JSON.parse(readFileSync(path, "utf8")); } catch { return undefined; } };
 
@@ -258,18 +283,41 @@ function install(root) {
 
   // ---------------------------------------------------------------- registry
   // A worktree registers its project: the main checkout is where the copy lives.
-  const project = inGit
-    ? tryGit(root, "worktree", "list", "--porcelain").match(/^worktree (.+)$/m)?.[1] ?? top
-    : root;
+  const project = inGit ? mainOf(root) ?? top : root;
   const reg = existsSync(REGISTRY) ? readJson(REGISTRY) : { recipients: [] };
   const list = reg?.recipients;
-  const expand = (p) => resolve(p.replace(/^~(?=\/)|^\$HOME(?=\/)/, homedir()));
   if (!Array.isArray(list)) report("hand", "registry", `${home(REGISTRY)} is not {"recipients": [...]} — left alone`);
-  else if (list.some((p) => expand(p) === resolve(project))) report("ok", "registry", `${home(project)} is listed`);
-  else act("registry", `${home(project)} added to ${home(REGISTRY)}`, () => {
-    mkdirSync(CONFIG, { recursive: true });
-    writeFileSync(REGISTRY, JSON.stringify({ ...reg, recipients: [...list, home(project)] }, null, 2) + "\n");
-  });
+  else {
+    /*
+     * An entry that is a worktree of this project stands in for it, and badly:
+     * the day the worktree is removed, the project drops out of every report
+     * without a word. On 26 September 2026 the registry listed a worktree of
+     * one project, and not the project itself. So such an entry is replaced by
+     * the project.
+     */
+    const here = expand(project);
+    const listed = list.some((p) => expand(p) === here);
+    const standIns = list.filter((p) => expand(p) !== here && mainOf(expand(p)) === here);
+    const recipients = [
+      ...list.filter((p) => !standIns.includes(p)),
+      ...(listed ? [] : [home(project)]),
+    ];
+    const write = () => {
+      mkdirSync(CONFIG, { recursive: true });
+      writeFileSync(REGISTRY, JSON.stringify({ comment: REGISTRY_COMMENT, ...reg, recipients }, null, 2) + "\n");
+    };
+    if (standIns.length) act("registry", `${standIns.join(", ")} is a worktree of ${home(project)} — the project is listed instead`, write);
+    else if (!listed) act("registry", `${home(project)} added to ${home(REGISTRY)}`, write);
+    else report("ok", "registry", `${home(project)} is listed`);
+
+    // Any local branch, not HEAD: a main checkout left on an old branch while
+    // the work goes on in worktrees is not a quiet project.
+    const last = Number(tryGit(project, "for-each-ref", "--sort=-committerdate", "--count=1", "--format=%(committerdate:unix)", "refs/heads"));
+    const days = last ? Math.floor((Date.now() / 1000 - last) / 86400) : 0;
+    if (days >= QUIET_DAYS) {
+      report("note", "registry", `no commit in ${days} days — if the project is retired: install.mjs --forget "${home(project)}"`);
+    }
+  }
 
   return { lines, open };
 }
@@ -361,6 +409,27 @@ function preCommit(root, top, report, act) {
 
 // ------------------------------------------------------------------ main
 
+// Nothing else takes a project out of the registry: a path that is gone is
+// skipped rather than dropped, since it may only be missing on this machine.
+// So retiring a project — the archived AI valey stayed listed for three weeks
+// after it was emptied — is a word somebody says, and this is where it is said.
+if (args.includes("--forget")) {
+  const target = args[args.indexOf("--forget") + 1];
+  const reg = readJson(REGISTRY);
+  if (!target || !Array.isArray(reg?.recipients)) {
+    console.error(target ? `error: no registry at ${home(REGISTRY)}.` : "error: --forget needs the path to take out.");
+    process.exit(2);
+  }
+  const keep = reg.recipients.filter((p) => expand(p) !== expand(target));
+  if (keep.length === reg.recipients.length) {
+    console.error(`error: ${target} is not in ${home(REGISTRY)}.`);
+    process.exit(2);
+  }
+  writeFileSync(REGISTRY, JSON.stringify({ ...reg, recipients: keep }, null, 2) + "\n");
+  console.log(`${home(expand(target))} taken out of ${home(REGISTRY)}. Its files are untouched.`);
+  process.exit(0);
+}
+
 let roots = [process.cwd()];
 if (all) {
   const reg = readJson(REGISTRY);
@@ -368,11 +437,8 @@ if (all) {
     console.error(`error: no registry at ${home(REGISTRY)}.`);
     process.exit(2);
   }
-  // A path that is not on this machine is skipped silently, as in the sync:
-  // one list serves every computer.
-  roots = reg.recipients
-    .map((p) => resolve(p.replace(/^~(?=\/)|^\$HOME(?=\/)/, homedir())))
-    .filter((p) => existsSync(p));
+  // A path that is not on this machine is skipped silently, as in the sync.
+  roots = reg.recipients.map(expand).filter((p) => existsSync(p));
 }
 
 let open = 0;
