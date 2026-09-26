@@ -588,13 +588,78 @@ function sectionsOverlapping(container, found) {
   }
 }
 
+/*
+ * Fault 11 — frames in one row that do not share a top line.
+ *
+ * A row puts frames side by side so a reader compares them by looking across:
+ * a phone and its tablet twin, a state and the state after it. That only works
+ * while they start on the same line, and a row built as caption-over-frame
+ * stacks does not keep it — a caption that wraps to one more line pushes its
+ * own frame down, and the row looks finished at any zoom where captions are
+ * unreadable. Hand-placed rows drift the same way, one nudge at a time.
+ *
+ * A row is read from geometry, since the canvas does not name one: frames
+ * sitting directly in a section or on a page, and the frames at the foot of
+ * each cell of a top-aligned horizontal auto-layout row. Two of them belong to
+ * one row when they stand side by side and one starts below the other by less
+ * than a quarter of the shorter one's height. A drop that large is somebody's
+ * next row, or a deliberate stagger; a drop of a caption line is neither.
+ * Half a pixel of slack, as everywhere here.
+ */
+const FRAME_LIKE = new Set(['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE']);
+const isFrameLike = (n) => FRAME_LIKE.has(n.type) && n.visible !== false && n.absoluteBoundingBox;
+
+/* The frame a cell shows: the last thing in a caption-over-frame stack. */
+function cellFrame(cell) {
+  if (cell.layoutMode !== 'VERTICAL') return isFrameLike(cell) ? cell : null;
+  const shown = (cell.children ?? []).filter((c) => c.visible !== false);
+  const last = shown[shown.length - 1];
+  return shown.length > 1 && last && isFrameLike(last) ? last : null;
+}
+
+function framesOutOfLine(members, row, found) {
+  for (const frame of members) {
+    const b = frame.absoluteBoundingBox;
+    let worst = null;
+    for (const other of members) {
+      if (other === frame) continue;
+      const c = other.absoluteBoundingBox;
+      const drop = b.y - c.y;
+      if (drop <= 0.5 || drop >= Math.min(b.height, c.height) / 4) continue;
+      const beside = b.x >= c.x + c.width - 0.5 || c.x >= b.x + b.width - 0.5;
+      if (!beside) continue;
+      if (!worst || drop > worst.drop) worst = { other, drop };
+    }
+    if (!worst) continue;
+    found.push({
+      rule: 'frames out of line in a row',
+      frame: row.name,
+      node: label(frame),
+      detail: `starts ${Math.round(worst.drop)} px below «${worst.other.name}» beside it — a row shares one top line`,
+    });
+  }
+}
+
+function rowsOutOfLine(container, found) {
+  const children = (container.children ?? []).filter((c) => c.visible !== false);
+  framesOutOfLine(children.filter(isFrameLike), container, found);
+  for (const row of children) {
+    if (row.layoutMode !== 'HORIZONTAL' || (row.counterAxisAlignItems ?? 'MIN') !== 'MIN') continue;
+    const frames = (row.children ?? []).filter((c) => c.visible !== false).map(cellFrame).filter(Boolean);
+    framesOutOfLine(frames, row, found);
+  }
+}
+
 /* Sections nest, and the audited node may be a page, a section or a frame. */
 function auditSections(node, found) {
   if (node.type === 'SECTION') {
     contentOutsideSection(node, found);
     defaultSectionFill(node, found);
   }
-  if (node.type === 'SECTION' || node.type === 'CANVAS') sectionsOverlapping(node, found);
+  if (node.type === 'SECTION' || node.type === 'CANVAS') {
+    sectionsOverlapping(node, found);
+    rowsOutOfLine(node, found);
+  }
   for (const child of node.children ?? []) auditSections(child, found);
 }
 
