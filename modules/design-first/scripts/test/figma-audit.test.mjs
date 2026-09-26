@@ -107,3 +107,41 @@ test('sections that only touch do not overlap', () => {
   const { code, out } = run(mine, { page: pageOf(mine, section('Feature · tea log', 1000, 0, 800, 800)) });
   assert.equal(code, 0, out);
 });
+
+/* ---- frames out of line in a row ---- */
+
+const screen = (name, x, y) => frame(name, x, y, 400, 800);
+
+test('a row of frames on one top line passes, and the next row is not a drift', () => {
+  const mine = section('Feature · pancake timer', 0, 0, 2000, 2000, [
+    screen('01 / Batter', 100, 100), screen('02 / Flip', 600, 100),
+    screen('03 / Stack', 100, 1100), screen('04 / Syrup', 600, 1100),
+  ]);
+  const { code, out } = run(mine);
+  assert.equal(code, 0, out);
+  assert.doesNotMatch(out, /out of line/);
+});
+
+test('a frame that slipped below its row blocks', () => {
+  const mine = section('Feature · pancake timer', 0, 0, 2000, 2000, [
+    screen('01 / Batter', 100, 100), screen('02 / Flip', 600, 124),
+  ]);
+  const { code, out } = run(mine);
+  assert.equal(code, 1, out);
+  assert.match(out, /frames out of line in a row — 1\n\s+Feature · pancake timer: 02 \/ Flip \[FRAME\] — starts 24 px below «01 \/ Batter» beside it/);
+});
+
+test('a caption that wrapped pushes its frame down inside an auto-layout row', () => {
+  const cell = (caption, x, frameY) => frame(`Cell / ${caption}`, x, 100, 400, 900, [
+    text(caption, x, 100), screen(caption, x, frameY),
+  ], { layoutMode: 'VERTICAL', fills: [] });
+  const row = (secondY) => section('Feature · pancake timer', 0, 0, 2000, 2000, [
+    frame('Row / main', 100, 100, 1000, 900, [cell('Batter', 100, 120), cell('Flip', 600, secondY)],
+      { layoutMode: 'HORIZONTAL', fills: [] }),
+  ]);
+  const clean = run(row(120));
+  assert.equal(clean.code, 0, clean.out);
+  const drifted = run(row(136));
+  assert.equal(drifted.code, 1, drifted.out);
+  assert.match(drifted.out, /Row \/ main: Flip \[FRAME\] — starts 16 px below «Batter» beside it/);
+});

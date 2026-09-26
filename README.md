@@ -217,6 +217,7 @@ It fetches the given nodes — a frame, a section or a whole page — through th
 | `section in the default fill` | A section still in the plain white fill Figma gives a new one. |
 | `sections overlap` | Two sections whose boxes overlap, where one is the audited section or both sit inside what was audited. The audited section's neighbours come from the page, read two levels deep. |
 | `sections overlap elsewhere on the page` | The same between two neighbours, neither of them audited. Advisory only: it is somebody else's section to move. |
+| `frames out of line in a row` | Frames side by side in a section, on a page or at the foot of the cells of a top-aligned horizontal auto-layout row, one starting a little below the other — less than a quarter of the shorter one's height, which is a caption that wrapped, not a new row. |
 | `layer drifted out of its instance` | An absolutely placed layer hanging outside the instance it belongs to. |
 | `text clipped by its frame` | A label cut off by the frame that clips it. A frame standing for a scrolled list is exempt when its name says so — `scrolls`. |
 
