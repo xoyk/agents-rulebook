@@ -21,6 +21,7 @@ export const MODULE_OF = {
   release: ["release-notes", "release-pictures", "release-tree",
             "build-numbers", "finishing-release"],
   publishing: ["publishing", "publishing-is-overwriting", "public-invented-data"],
+  "team-feed": ["team-feed"],
 };
 
 export const ANCHOR = /^<!-- (rule|local):([a-z0-9-]+) -->$/gm;

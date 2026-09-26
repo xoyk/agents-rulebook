@@ -14,7 +14,7 @@ Requirements: `git` and Node 18 or newer. Nothing is installed with npm; every s
 git clone git@github.com:xoyk/agents-rulebook.git ~/.claude/skills/agents-init
 ```
 
-The repository is the skill directory, so that clone is the whole installation. Then, in a project, run `/agents-init` in Claude Code. It asks four questions — what the project is, and whether design, releases and a public page are in the loop — plus a fifth where the directory is not a git repository yet: whether to start a local one (no remote, nothing committed). Then it leaves behind:
+The repository is the skill directory, so that clone is the whole installation. Then, in a project, run `/agents-init` in Claude Code. It asks five questions — what the project is, and whether design, releases, a public page and a team feed are in the loop — plus a sixth where the directory is not a git repository yet: whether to start a local one (no remote, nothing committed). Then it leaves behind:
 
 | File | What it is |
 |---|---|
@@ -51,6 +51,7 @@ Updating the canon on this machine is `git pull` in the skill directory — a sk
 | `modules/design-first/` | Code starts only after an approved frame: a `WIP` section per piece of work, promoting its components with it, archiving, placement, the Figma painting traps that ship invisible text, one owner for a shared design file — plus `scripts/figma-audit.mjs`, which checks frames for all of it, and `skills/figma-wip-section/SKILL.md`, which says how a `WIP` section is built. |
 | `modules/release/` | Release notes generated from per-audience commit trailers instead of remembered, the one tree a release is cut in, build numbers, and finishing a release. The store-specific sections are deleted where there is no store. |
 | `modules/publishing/` | A published file cannot be withdrawn, only overwritten; anything shown in public is drawn from invented data at the source. |
+| `modules/team-feed/` | When a notable change lands, the agent drafts one line for the team's feed channel and posts it only on the user's yes. |
 | `scripts/install.mjs` | Wires an assembled `AGENTS.md` into its project: stamp, `BACKLOG.md`, page, hooks, registry. `--git-init` first creates a local repository where there is none (no remote, no commit); `--check` writes nothing and lists what is missing; `--check --all` does it for the whole registry; `--pre-commit` prints the git hook for adding to one that is already there. |
 | `scripts/stamp-rulebook.mjs` | Writes the stamp. `--basis install` for a fresh copy, `--basis adopted` for a rulebook that was not assembled here, `--check` to list sections that drifted from their stamp without writing anything. |
 | `scripts/sync-rulebook.mjs` | Compares copies with the canon and says what to do with each section; `--apply` takes the mechanical half; `--html` draws every copy on one map. |

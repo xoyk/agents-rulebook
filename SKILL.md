@@ -1,6 +1,6 @@
 ---
 name: agents-init
-description: Installs working agreements into a project — AGENTS.md and BACKLOG.md, assembled from the templates and modules in this skill, then stamped so the copy can be compared with the canon later. A core plus optional modules: a design-first cycle, releases, and publishing a public page. Use it when someone starts a new project and asks for working agreements, conventions, an AGENTS.md, a "starter" or a "rules template", invokes /agents-init, or when an existing repository has no such rules and they ask for them. Do not use it to edit an AGENTS.md that is already installed — that is ordinary file editing.
+description: Installs working agreements into a project — AGENTS.md and BACKLOG.md, assembled from the templates and modules in this skill, then stamped so the copy can be compared with the canon later. A core plus optional modules: a design-first cycle, releases, publishing a public page, and a team feed. Use it when someone starts a new project and asks for working agreements, conventions, an AGENTS.md, a "starter" or a "rules template", invokes /agents-init, or when an existing repository has no such rules and they ask for them. Do not use it to edit an AGENTS.md that is already installed — that is ordinary file editing.
 ---
 
 # Working agreements for a project
@@ -54,7 +54,7 @@ the template by meaning rather than by heading, and mark everything else
 `<!-- local:<id> -->`. It is a one-off job, and until it is done the copy cannot
 be compared with the canon or with any other project.
 
-### 2. Ask four things, and a fifth only where there is no git
+### 2. Ask five things, and a sixth only where there is no git
 
 Briefly, as one question through the choice tool:
 
@@ -73,8 +73,12 @@ Briefly, as one question through the choice tool:
    possible to overwrite, and everything shown in public being drawn on invented
    data from the start. Any project with a site, a landing page or a demo wants
    it, not only the ones with a CDN.
+5. **Whether the team keeps a feed of changes** — whether the `team-feed`
+   module is needed. It covers an agent drafting a one-line message for the
+   team's channel when a notable change lands, and posting it only on the
+   user's yes. It needs the channel's name, which fills its one `{{...}}`.
 
-5. **Only when step 1 found no repository: whether to start one.** Local only —
+6. **Only when step 1 found no repository: whether to start one.** Local only —
    `git init` on `main`, no remote, nothing committed. Offer "yes" first and
    mark it recommended: every rule in the core assumes a repository, and so
    does the pre-commit hook that keeps the page current. The answer yes is
@@ -93,7 +97,8 @@ are cheaper to correct later than to guess now.
 ### 3. Assemble the file
 
 Assembly order: `templates/AGENTS.core.md` → the chosen modules in the order
-listed above (`design-first`, `release`, `publishing`) → `templates/AGENTS.tail.md`.
+listed above (`design-first`, `release`, `publishing`, `team-feed`) →
+`templates/AGENTS.tail.md`.
 
 The tail always comes last: it is the section about how to extend the file, and
 in the middle of a finished document it reads like an insertion.

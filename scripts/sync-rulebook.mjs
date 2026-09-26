@@ -57,6 +57,7 @@ const TEMPLATES = [
   "modules/design-first/MODULE.md",
   "modules/release/MODULE.md",
   "modules/publishing/MODULE.md",
+  "modules/team-feed/MODULE.md",
   "templates/AGENTS.tail.md",
 ];
 
