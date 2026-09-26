@@ -1,13 +1,16 @@
 ---
 name: agents-init
-description: Installs working agreements into a project — AGENTS.md, BACKLOG.md and a CLAUDE.md pointer, assembled from the templates and modules in this skill, then stamped so the copy can be compared with the canon later. A core plus optional modules: a design-first cycle, releases, and publishing a public page. Use it when someone starts a new project and asks for working agreements, conventions, an AGENTS.md, a "starter" or a "rules template", invokes /agents-init, or when an existing repository has no such rules and they ask for them. Do not use it to edit an AGENTS.md that is already installed — that is ordinary file editing.
+description: Installs working agreements into a project — AGENTS.md and BACKLOG.md, assembled from the templates and modules in this skill, then stamped so the copy can be compared with the canon later. A core plus optional modules: a design-first cycle, releases, and publishing a public page. Use it when someone starts a new project and asks for working agreements, conventions, an AGENTS.md, a "starter" or a "rules template", invokes /agents-init, or when an existing repository has no such rules and they ask for them. Do not use it to edit an AGENTS.md that is already installed — that is ordinary file editing.
 ---
 
 # Working agreements for a project
 
-Installs three files: `AGENTS.md` (the agreements), `BACKLOG.md` (the list of
-work), and `CLAUDE.md` (a single line, `@AGENTS.md`, so that Claude Code picks
-up the same file every other agent reads).
+Installs two files: `AGENTS.md` (the agreements) and `BACKLOG.md` (the list of
+work). Claude Code reads `AGENTS.md` by itself, like every other agent, so
+there is no `CLAUDE.md` pointer: the canon installed a one-line `@AGENTS.md`
+until 26 September 2026, when Claude Code 2.1.282 was measured loading
+`AGENTS.md` with no `CLAUDE.md` at all. A `CLAUDE.md` a project already has
+is left alone.
 
 The text lives next to this file: `templates/AGENTS.core.md`,
 `templates/AGENTS.tail.md`, and one folder per module under `modules/`.
@@ -32,7 +35,7 @@ existed, and nobody had configured one either.
 ### 1. Look at what is already there
 
 ```bash
-ls AGENTS.md CLAUDE.md BACKLOG.md 2>/dev/null
+ls AGENTS.md BACKLOG.md 2>/dev/null
 git rev-parse --show-toplevel 2>/dev/null || echo "not a git repository"
 ```
 
@@ -124,8 +127,7 @@ whatever is in place, so running it twice is safe:
 - **The stamp**, `.claude/rulebook.json`, through `stamp-rulebook.mjs` — only
   when there is none. For a rulebook that was not assembled here, pass
   `--basis adopted`.
-- **`CLAUDE.md`**, exactly one line, `@AGENTS.md`, and **`BACKLOG.md`** from
-  `templates/BACKLOG.md` — only when they do not exist.
+- **`BACKLOG.md`** from `templates/BACKLOG.md` — only when it does not exist.
 - **The page**, `.claude/rulebook.html`, through `render-rulebook.mjs`.
 - **The Claude Code hook** that redraws the page when `AGENTS.md` is edited,
   merged into the project's `.claude/settings.json`.
@@ -141,8 +143,8 @@ page would publish it. Fix the file and run it again.
 
 Every line of its output starts with `ok`, `done`, `skip` or `hand`. **A `hand`
 line goes into the report, in `Needed from you`:** it is a step the script would
-not decide — a `CLAUDE.md` that exists without the import, a settings file that
-is not valid JSON, a pre-commit hook that belongs to somebody else. A `skip`
+not decide — a settings file that is not valid JSON, a pre-commit hook that
+belongs to somebody else. A `skip`
 line says why a step does not apply, and belongs in the report too: "no git hook
 here, because the rulebook is out of git" is a decision the reader should see.
 
@@ -177,7 +179,7 @@ copy lives.
 #### The hooks
 
 **Rulebook in git or out of it is the project's own call**, and the files go
-together either way: `AGENTS.md`, `CLAUDE.md`, the stamp and the page. The
+together either way: `AGENTS.md`, the stamp and the page. The
 README says why a subset lies. The script reads the answer from `git
 check-ignore AGENTS.md` and installs the hooks that fit:
 
