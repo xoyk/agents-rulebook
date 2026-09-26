@@ -7,7 +7,7 @@
  * whichever model ran the skill: JSON pasted into two settings files, a git hook
  * typed out with its guards, core.hooksPath set, the registry edited by hand.
  * Every step was the same every time, and every step was a place to get it
- * slightly wrong. What is left to the skill is what needs judgment — the four
+ * slightly wrong. What is left to the skill is what needs judgment — the five
  * questions, filling the blanks, merging with a rulebook already there.
  *
  * Usage, from the project root, after AGENTS.md has been assembled:
