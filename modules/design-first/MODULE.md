@@ -8,6 +8,13 @@ the user explicitly says the rule may be bypassed for this piece of work.
 This module assumes Figma. The workflow generalises; the API traps at the end
 do not.
 
+A project with no Figma file yet sets one up first — pages, state variables,
+kit, cover — as the module's second tool says:
+
+```text
+~/.claude/skills/agents-init/modules/design-first/skills/figma-new-file/SKILL.md
+```
+
 <!-- rule:wip-section -->
 ### A new piece of work gets its own section on `WIP`
 
