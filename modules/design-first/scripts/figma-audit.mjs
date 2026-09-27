@@ -1057,9 +1057,17 @@ async function main() {
     auditSections(root, found);
     /* A section or page is a container, so audit each frame under its own name. */
     const targets = root.type === 'SECTION' || root.type === 'CANVAS' ? (root.children ?? []) : [root];
+    /*
+     * A section's own fill is the ground its loose text sits on — the row labels
+     * and frame captions of a WIP section, on its state tint. Walking each child
+     * with empty ancestry left that fill out, so on 26 September 2026 every
+     * caption of a 4FH section read as "dark text on nothing painted": eight
+     * blocking findings, all of them dark text on a light yellow ground.
+     */
+    const ancestry = root.type === 'SECTION' ? [root] : [];
     for (const target of targets) {
       scanned += 1;
-      walk(target, [], target.name, found);
+      walk(target, ancestry, target.name, found);
     }
   }
   await neighbourOverlaps(Object.values(nodes).map((entry) => entry.document), found, notes);
