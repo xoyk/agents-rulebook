@@ -54,7 +54,7 @@ the template by meaning rather than by heading, and mark everything else
 `<!-- local:<id> -->`. It is a one-off job, and until it is done the copy cannot
 be compared with the canon or with any other project.
 
-### 2. Ask five things, and a sixth only where there is no git
+### 2. Ask six things, and a seventh only where there is no git
 
 Briefly, as one question through the choice tool:
 
@@ -77,8 +77,15 @@ Briefly, as one question through the choice tool:
    module is needed. It covers an agent drafting a one-line message for the
    team's channel when a notable change lands, and posting it only on the
    user's yes. It needs the channel's name, which fills its one `{{...}}`.
+6. **Whether there is an Apple app** — iPhone, iPad or Mac, native or Expo —
+   whether the `apple` module is needed. It covers the generated Xcode project
+   nobody clicks settings into, the signing Team kept in a local file and found
+   on the machine rather than asked for again, simulator commands that name
+   their OS, and the first device run being the user's. It is about having an
+   Apple app at all, not about the App Store: a device build needs the Team
+   from the first day, releases or none.
 
-6. **Only when step 1 found no repository: whether to start one.** Local only —
+7. **Only when step 1 found no repository: whether to start one.** Local only —
    `git init` on `main`, no remote, nothing committed. Offer "yes" first and
    mark it recommended: every rule in the core assumes a repository, and so
    does the pre-commit hook that keeps the page current. The answer yes is
@@ -97,7 +104,7 @@ are cheaper to correct later than to guess now.
 ### 3. Assemble the file
 
 Assembly order: `templates/AGENTS.core.md` → the chosen modules in the order
-listed above (`design-first`, `release`, `publishing`, `team-feed`) →
+listed above (`design-first`, `release`, `publishing`, `team-feed`, `apple`) →
 `templates/AGENTS.tail.md`.
 
 The tail always comes last: it is the section about how to extend the file, and
@@ -121,7 +128,7 @@ and `###` heading carries an anchor above it.
 ### 4. Wire it up with one command
 
 ```bash
-node <skill>/scripts/install.mjs              # add --git-init if the answer to question 5 was yes
+node <skill>/scripts/install.mjs              # add --git-init if the answer to the git question was yes
 ```
 
 Everything after assembly is the same every time, so it is a script rather than
