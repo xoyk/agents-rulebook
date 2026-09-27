@@ -48,7 +48,7 @@ Updating the canon on this machine is `git pull` in the skill directory — a sk
 | `templates/AGENTS.core.md` | Always installed. Reporting back, saying what actually happened, names, the backlog, working in parallel and what worktrees do not fix, commits, pushing, merging and releasing, things only the user does. |
 | `templates/AGENTS.tail.md` | Always installed, always last. How to extend the file, section anchors, canon precedence. |
 | `templates/BACKLOG.md` | The backlog a project starts with. |
-| `modules/design-first/` | Code starts only after an approved frame: a `WIP` section per piece of work, promoting its components with it, archiving, placement, the Figma painting traps that ship invisible text, one owner for a shared design file — plus `scripts/figma-audit.mjs`, which checks frames for all of it, `skills/figma-wip-section/SKILL.md`, which says how a `WIP` section is built, and `skills/figma-new-file/SKILL.md`, which sets up a project's file — pages, kit and cover — before the first section. |
+| `modules/design-first/` | Code starts only after an approved frame: a `WIP` section per piece of work, approved by a flag and chosen by a framed comment, promoting its components with it, archiving, placement, the Figma painting traps that ship invisible text, one owner for a shared design file — plus `scripts/figma-audit.mjs`, which checks frames for all of it, `scripts/figma-inbox.mjs`, which reads the approvals and framed comments the plugin API cannot see, `skills/figma-wip-section/SKILL.md`, which says how a `WIP` section is built, and `skills/figma-new-file/SKILL.md`, which sets up a project's file — pages, kit and cover — before the first section. |
 | `modules/release/` | Release notes generated from per-audience commit trailers instead of remembered, the one tree a release is cut in, build numbers, and finishing a release. The store-specific sections are deleted where there is no store. |
 | `modules/publishing/` | A published file cannot be withdrawn, only overwritten; anything shown in public is drawn from invented data at the source. |
 | `modules/team-feed/` | When a notable change lands, the agent drafts one line for the team's feed channel and posts it only on the user's yes. |
@@ -196,6 +196,18 @@ node ~/.claude/skills/agents-init/scripts/refresh-worktree.mjs --all
 ```
 
 A running agent reads its instructions when its session starts, so a changed rulebook reaches a live session only when the session restarts or is told to re-read it.
+
+## The design-first inbox
+
+```bash
+node ~/.claude/skills/agents-init/modules/design-first/scripts/figma-inbox.mjs [<section-id>...]
+```
+
+What the reviewer has said on the `WIP` page: per section, the state its name claims, the Ready for dev or Completed flag Figma holds, what follows from the two — flip to 🟢, the choice a framed comment made, a choice that is unclear, a section to promote — and every open comment with the frames its frame covers, by their letters. Without ids it reads every section on the page named by `figma.wip.page`, in `figma.wip.file` when the `WIP` page lives in a file of its own. It never writes: the flip and the `decided` line are the agent's to make after reading it.
+
+It exits `0` after printing and `2` when it could not run; it gates nothing. `--from <dir>` reads `file.json`, `nodes.json` and `comments.json` instead of the network: `node --test modules/design-first/scripts/test/figma-inbox.test.mjs`.
+
+Both scripts find the file key and the token the same way, through `scripts/figma-rest.mjs`.
 
 ## The design-first audit
 
