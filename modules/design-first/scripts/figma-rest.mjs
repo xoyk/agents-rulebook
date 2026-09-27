@@ -156,8 +156,8 @@ export function readToken() {
 }
 
 /* One GET against the REST API, with the error naming what was asked for. */
-export async function figmaGet(path, what) {
-  const response = await fetch(`https://api.figma.com/v1/files/${readFileKey()}${path}`, {
+export async function figmaGet(path, what, key = readFileKey()) {
+  const response = await fetch(`https://api.figma.com/v1/files/${key}${path}`, {
     headers: { 'X-Figma-Token': readToken() },
   });
   if (!response.ok) throw new Error(`Figma answered ${response.status} ${response.statusText} for ${what}`);
