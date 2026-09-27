@@ -69,7 +69,9 @@ while a template exists.
      and other sections are left alone unless asked.
    - **state** — the same coloured circle as the section name, then the state
      in words and how far the work has got: what is drawn, and once the
-     section is green, what is built and whether it has been accepted.
+     section is green, what is built and whether it has been accepted. A
+     section that compares options names the one the agent recommends here,
+     before it turns 🔵: that is what an approval with no framed choice takes.
 
    It is what makes a section left open for three weeks readable by someone who
    was not there, and the fixed row names are the point: prose lets a skipped
@@ -105,6 +107,55 @@ while a template exists.
    their place, and delete the now-empty `WIP` section. Exploration —
    rejected options, comparison boards — goes to `Legacy` too: that is where
    the answer to "why is it like this?" belongs.
+
+<!-- rule:approval-signal -->
+### Approval is a flag, a choice is a framed comment
+
+The user answers a section on the canvas, not in the chat, and in two gestures
+only:
+
+- **Ready for dev on the section is the approval.** It is the one flag Figma
+  gives every section, so there is nothing to remember and nothing to type.
+  **Completed** on it is acceptance on a build — the word step 4 above waits
+  for before promoting.
+- **A comment framed around a frame is a choice** among the options a section
+  compares, and a comment framed around anything else is a remark about that
+  thing. The text can be anything; the frame is what says which option.
+
+The user sets the flag; the agent does everything that follows from it — the
+flip to 🟢, the `decided` line with the date and the comment quoted, fading the
+rows that lost. So the page stays a status board with one colour of work on
+it: blue waits for the user, green does not, and the two gestures are all it
+takes to move one to the other.
+
+**Neither is visible to the plugin API**, which has no comments and refuses
+`devStatus`. Both are read over REST, by the module's inbox:
+
+```bash
+node ~/.claude/skills/agents-init/modules/design-first/scripts/figma-inbox.mjs [section-id...]
+```
+
+It prints, per section on the `WIP` page, the state the name claims, the flag
+Figma holds, what follows from the two, and every open comment with the frames
+it covers by their letters. **Run it at the start of any session that touches
+design, and before changing a section**: a comment's frame is stored against a
+node as it is now, so a section rebuilt after the comment moves the frame with
+it.
+
+- **An approval with more than one live row and no framed choice is not a
+  choice.** Take the recommendation the `Brief` states — a section with options
+  always states one — or ask. Never pick the likeliest-looking one.
+- **A frame over two rows, or two comments framing different rows, is a
+  question**, and the inbox prints it as one.
+- **A comment is answered in the section**, in `decided`, not by replying in
+  Figma: a reply posts under the user's own name, and that is theirs to do.
+
+On 2026-09-28 in 4FH the first approval arrived this way — Ready for dev on the
+icon section, and a comment framed around option A. The agent read the text
+alone and reported that no option was named; then read the frame from its top
+left, when Figma stores it from the corner its pin sits on, landed on B2, and
+reported the choice as B. The user had to send a screenshot to get A. The
+inbox's first test is that frame.
 
 <!-- rule:component-promotion -->
 ### A section's components are promoted with it

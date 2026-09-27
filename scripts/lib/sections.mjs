@@ -16,7 +16,7 @@ export const MODULE_OF = {
          "parallel-work", "worktree-limits", "commits", "pushing",
          "merge-and-release", "user-only", "extending", "section-anchors",
          "canon-precedence"],
-  "design-first": ["design-first", "wip-section", "component-promotion",
+  "design-first": ["design-first", "wip-section", "approval-signal", "component-promotion",
                    "archiving", "placement", "painting", "design-file-shared"],
   release: ["release-notes", "release-pictures", "release-tree",
             "build-numbers", "finishing-release"],
