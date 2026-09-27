@@ -275,6 +275,40 @@ new request for approval and leaves it green.
 A section left in Figma's default white fill is what the audit reports as
 `section in the default fill`.
 
+## A rejected option stays, and reads as rejected
+
+Options are drawn side by side and most of them lose. A losing row is not
+deleted: it is the answer to "why is it like this?", and it moves to `Legacy`
+with the rest of the section at promotion. Until then it stays in the section,
+and it has to read as decided from across the canvas — without anyone opening
+it. Four things do that, and each covers a gap the others leave:
+
+1. **One opacity on the whole row, 0.45** — on the row's container, never on its
+   frames one by one. Fading only the frames leaves the caption and the row label
+   at full strength, and the row still reads as live.
+2. **The row label names what lost**: `🧪 D · Rejected — track with a number
+   chip`, not `D · Rejected`. The 🧪 is the same mark the section name uses for a
+   rejected section, carried down to one row, and it is the part a script can
+   read: opacity is how the row looks, not what it is.
+3. **Chosen rows first, rejected rows after them**, in the order they lost. The
+   fade says what is inactive; the order says where to look first.
+4. **The reason lives in the `Brief`**, in **decided**, with its date, and the
+   row's captions keep their argument. A faded row without a recorded reason is
+   one nobody can argue with later.
+
+Masters that only rejected rows still instance leave the section's
+`Local masters` card for a card of their own, faded the same, whose description
+says they go with those rows. They cannot be deleted while the rows need them
+to render — a deleted master leaves its instances pointing at nothing, silently
+— and left among the live masters they read as candidates for the library.
+
+0.45 is chosen for the light state fills a section carries: captions stay
+readable on them. On a dark board it is too faint, and the number should be
+judged there again rather than copied.
+
+Worked out on 2026-09-27 in 4FH, where one section held seven rows of options,
+four of them rejected, and the chosen two had to be findable at a glance.
+
 ## Type
 
 The product's UI font (`wip.font`) throughout. Sizes are large because the
@@ -369,7 +403,8 @@ it was built from when the variable does not resolve.
 6. Every `Brief` row is filled. An empty **why** is the one the format exists to
    expose.
 7. Every row of frames is the two-track grid, and its frames start on one line.
-8. No placeholder slot from the template is left.
+8. No placeholder slot from the template is left. A rejected row is faded as a
+   whole, labelled with 🧪 and what lost, and sits after the chosen rows.
 9. Every reference is a clickable, underlined link — annotations included — and
    no frame carries an annotation cloned from the frame it was copied from.
 10. The audit reports nothing blocking, or the `Brief` says why a finding is
