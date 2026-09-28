@@ -117,7 +117,11 @@ only:
 - **Ready for dev on the section is the approval.** It is the one flag Figma
   gives every section, so there is nothing to remember and nothing to type.
   **Completed** on it is acceptance on a build — the word step 4 above waits
-  for before promoting.
+  for before promoting. Figma offers Completed only on its Organization and
+  Enterprise plans; on Professional there is no such flag, and acceptance is
+  the user's word in the chat. A project on Professional declares this
+  section an override saying so, as one did on 2026-09-28 after the rule had
+  asked its user for a status the plan could not set.
 - **A comment framed around a frame is a choice** among the options a section
   compares, and a comment framed around anything else is a remark about that
   thing. The text can be anything; the frame is what says which option.
