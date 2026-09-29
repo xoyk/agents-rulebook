@@ -306,8 +306,9 @@ to render — a deleted master leaves its instances pointing at nothing, silentl
 readable on them. On a dark board it is too faint, and the number should be
 judged there again rather than copied.
 
-Worked out on 2026-09-27 in 4FH, where one section held seven rows of options,
-four of them rejected, and the chosen two had to be findable at a glance.
+Worked out on 2026-09-27 in one project, where one section held seven rows of
+options, four of them rejected, and the chosen two had to be findable at a
+glance.
 
 ## Type
 
