@@ -34,7 +34,7 @@ account had eight.
 
 | Page | Holds |
 |---|---|
-| `Cover` | One frame, `Cover` — see step 5. First, so the file opens on it. |
+| `Cover` | One frame, `Cover`, holding the `Thumbnail` instance — see step 5. First, so the file opens on it. |
 | `WIP` | One section per open feature. Empty means everything drawn is in the code. |
 | `Production` | The frames that describe every flow the product has. |
 | `Legacy` | Replaced frames and rejected exploration. |
@@ -64,36 +64,50 @@ emoji stay in section *names*, where Figma's own UI draws them.
 ## 5. The cover
 
 The cover is what the file browser shows for the file, so it is the first thing
-a teammate sees of the project. It holds:
+a teammate sees of the project. **It is an instance of a `Thumbnail` component
+from the kit, never a drawing.** Covers drawn by hand in each file drift apart —
+one grows a gradient, another a different pill, a third a size of its own — and
+fixing them means visiting every file; a component is fixed once and every file
+follows on the next library update.
 
-- the product's name, large;
-- one line saying what the product is;
-- what exists so far — the modules, the platforms — as short labels;
-- one real screen of the product, cloned from a frame and scaled.
+The component is a 1280×720 card with three things on it:
 
-**Invented data only.** The cover is the most shared picture in the file, and
-the rule on public data applies to it in full. Clone from a frame that already
-obeys it, never from a screenshot of the running product.
+- a pill naming the **product line** the file belongs to — one variant per line,
+  the `Product` property, and the pill text is fixed by the variant rather than
+  typed, so it cannot drift from the line;
+- a **title** in two short lines saying what the file is — `Design` / `Library`,
+  `Emails —` / `production` — as a text property; a dash ends the first line;
+- one **emoji** that stands for the file, as a text property.
 
-**Size 1920×960**, the Community cover size; keep the name and the line away
-from the edges, since the browser may crop the thumbnail.
+Colours come from a variable collection with **one mode per product line**, and
+each variant sets its own mode, so a colour is changed in one place. A tint is a
+solid colour, never an overlay at some opacity. Which line a file belongs to
+follows the project or folder it sits in; the bindings name them.
+
+**Wrap the instance in a plain frame.** Figma offers *Set as thumbnail* on a
+top-level frame and not on an instance, so the cover page holds a frame named
+after it, with the instance inside at 0,0 — measured on 29 September 2026.
 
 **Setting it as the thumbnail is a manual step.** The Plugin API has
 `setFileThumbnailNodeAsync`, and `use_figma` refuses it — measured on
 28 September 2026: `"setFileThumbnailNodeAsync" is not a supported API`. So the
 report that finishes the setup puts it under `Needed from you`: right-click the
-`Cover` frame → *Set as thumbnail*. Without that line the cover exists and
-nobody sees it.
+frame → *Set as thumbnail*. Without that line the cover exists and nobody sees
+it.
 
-Redraw the cover when what it names changes — a module promoted, a platform
-added. A cover that lists last quarter's product is worse than the default grey.
+**Keep the frame the thumbnail points at.** The thumbnail is a reference to a
+node: delete that frame and the file falls back to Figma's default preview. A
+cover is changed inside its frame — the instance swapped or its properties
+edited — never by deleting the frame and placing a new one.
 
 ## 6. The kit
 
 Build the masters figma-wip-section instances — banner with a state pill,
 `Brief` with its row master, row label, caption, note — on a `Kit — WIP section
 masters` section, and the app shell every screen is drawn in on `Kit — shared
-app masters`. Every master's `description` says it is unpublished. Then build
+app masters`, and the `Thumbnail` cover component of step 5 beside them — the
+one master a new file needs before anything else, since its own cover is an
+instance of it. Every master's `description` says it is unpublished. Then build
 one section *template* from them, so the first feature section is a duplicate
 and not another assembly by hand.
 
