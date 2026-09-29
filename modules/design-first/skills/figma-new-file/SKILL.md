@@ -79,6 +79,18 @@ The component is a 1280×720 card with three things on it:
   `Emails —` / `production` — as a text property; a dash ends the first line;
 - one **emoji** that stands for the file, as a text property.
 
+**A glyph drawn by a colour font ignores the fill it is given, silently.** The
+fill reads back as the colour that was set, and the glyph renders in the colour
+font's own palette, so nothing in the API says anything is wrong. On
+29 September 2026 chesswall's mark — ♟, `U+265F` — came out near-black on a
+near-black ground, and none of the usual symbol families (`Apple Symbols`,
+`Arial Unicode MS`, `Noto Sans Symbols 2`) was installed to switch to: the
+renderer substitutes one of its own, and the choice is not the plugin's to make.
+So do not paint a mark like this. **Seat it on a tile whose fill you do
+control** — chesswall's sits on a light board square, which is also the product's
+own motif — and confirm it in a screenshot, because the property values cannot
+tell you.
+
 Colours come from a variable collection with **one mode per product line**, and
 each variant sets its own mode, so a colour is changed in one place. A tint is a
 solid colour, never an overlay at some opacity. Which line a file belongs to
@@ -118,8 +130,34 @@ lists them: `figma.file`, `palette`, `accentGrounds`, and the `wip` block with
 the master and kit node ids, the font and the state variables. Then run the
 audit on the kit section: it is the first thing in the file it can check.
 
-## Two traps met while doing this
+## Traps met while doing this
 
+- **A section's children are positioned relative to the section, not to the
+  page.** Setting a child's `x` to the section's own `x` plus a padding puts it
+  that far outside — and a section does not clip, so the content renders on bare
+  canvas beside its section and the section reads as empty. The audit calls this
+  `content outside its section`; it is the same fault whether the cause was a
+  resize or an arithmetic habit carried over from page-level nodes.
+- **Grid auto-layout tracks default to `FLEX`, which collapses a hugging
+  container to its gaps.** `FLEX` tracks divide space the container does not
+  have when it hugs, so a two-track caption-and-frame grid measured 120 × 100 —
+  exactly its column and row gap — while its children were 660 × 760 and hung
+  outside it. The valid track types are `FLEX | FIXED | HUG` (not `AUTO`), so
+  set both axes explicitly before hugging:
+
+  ```js
+  frames.gridColumnSizes = [{ type: 'HUG' }, { type: 'HUG' }]
+  frames.gridRowSizes    = [{ type: 'HUG' }, { type: 'HUG' }]
+  frames.layoutSizingHorizontal = 'HUG'
+  frames.layoutSizingVertical   = 'HUG'
+  ```
+
+- **`gridRowAnchorIndex` and `gridColumnAnchorIndex` are read-only on an
+  INSTANCE**, so a grid whose cells are instances cannot be addressed by
+  coordinates at all. Append the children in row-major order instead — both
+  captions, then both frames — and let auto-placement fill the tracks. Both were
+  measured on 29 September 2026 building chesswall's section template, where the
+  cells are caption instances above frames.
 - **`use_figma` skips hidden layers inside instances.** Its
   `skipInvisibleInstanceChildren` is on, so a layer hidden in a master is
   absent from an instance's `children` and `findAll` — a script that shows a
