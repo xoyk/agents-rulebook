@@ -14,7 +14,7 @@ Requirements: `git` and Node 18 or newer. Nothing is installed with npm; every s
 git clone git@github.com:xoyk/agents-rulebook.git ~/.claude/skills/agents-init
 ```
 
-The repository is the skill directory, so that clone is the whole installation. Then, in a project, run `/agents-init` in Claude Code. It asks five questions — what the project is, and whether design, releases, a public page and a team feed are in the loop — plus a sixth where the directory is not a git repository yet: whether to start a local one (no remote, nothing committed). Then it leaves behind:
+The repository is the skill directory, so that clone is the whole installation. Then, in a project, run `/agents-init` in Claude Code. It asks six questions — what the project is, and whether design, releases, a public page, a team feed and an Apple app are in the loop — plus two that are asked only where they apply: how the design space is arranged, many projects side by side or one project in many files, where design is in the loop; and whether to start a local repository (no remote, nothing committed) where the directory is not one yet. Then it leaves behind:
 
 | File | What it is |
 |---|---|
@@ -243,6 +243,7 @@ It reads its settings from the project's `.claude/rulebook.json`, under `figma`:
 | Key | Meaning |
 |---|---|
 | `file` | The Figma file key. |
+| `space` | How the design space is arranged: `many-projects` or `one-project`. Not read by the audit — by `figma-new-file`, to decide what a file's cover names. |
 | `configFile`, `tokenPath`, `filePath` | Read the token and the file key from a settings file outside the repository, by dotted path, so neither is ever committed. |
 | `palette` | The design's own colours. A leftover in one of them is not reported as debris from an older palette. |
 | `accentGrounds` | Grounds on which dark text is intended. |
