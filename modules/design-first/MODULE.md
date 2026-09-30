@@ -116,12 +116,10 @@ only:
 
 - **Ready for dev on the section is the approval.** It is the one flag Figma
   gives every section, so there is nothing to remember and nothing to type.
-  **Completed** on it is acceptance on a build — the word step 4 above waits
-  for before promoting. Figma offers Completed only on its Organization and
-  Enterprise plans; on Professional there is no such flag, and acceptance is
-  the user's word in the chat. A project on Professional declares this
-  section an override saying so, as one did on 2026-09-28 after the rule had
-  asked its user for a status the plan could not set.
+  There is no second flag. **Acceptance on a build — the word step 4 above
+  waits for before promoting — is the user's word in the chat**, said after
+  running the build, because a build is where it is judged and the canvas is
+  not.
 - **A comment framed around a frame is a choice** among the options a section
   compares, and a comment framed around anything else is a remark about that
   thing. The text can be anything; the frame is what says which option.
@@ -160,6 +158,13 @@ alone and reported that no option was named; then read the frame from its top
 left, when Figma stores it from the corner its pin sits on, landed on B2, and
 reported the choice as B. The user had to send a screenshot to get A. The
 inbox's first test is that frame.
+
+This section used to name a second flag, *Completed*, as the acceptance. It got
+into the canon by accident: none of the plans these projects live on offers it.
+On 2026-09-28 the rule asked one user for a status their plan could not set, and
+the first answer was to have each such project declare an override. By
+2026-09-30 the projects were opting out of the same sentence one by one, and a
+rule every copy has to opt out of is not a rule, so the sentence went instead.
 
 <!-- rule:component-promotion -->
 ### A section's components are promoted with it

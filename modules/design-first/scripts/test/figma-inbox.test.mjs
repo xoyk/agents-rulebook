@@ -88,7 +88,7 @@ test('an approval without a framed choice falls back to the Brief, and a rejecte
 
 test('the flag and the name together say whose move it is', () => {
   assert.match(run(section(), []).out, /flag: none\n  → waiting for approval/);
-  assert.match(run(section({ name: '🟢 WIP — Icon', devStatus: 'COMPLETED' }), []).out, /accepted on a build — promote/);
+  assert.match(run(section({ name: '🟢 WIP — Icon', devStatus: 'COMPLETED' }), []).out, /Completed is not a signal — acceptance on a build is said in the chat/);
   assert.match(run(section({ name: '🟢 WIP — Icon' }), []).out, /🟢 without the flag/);
   assert.match(run(section({ name: '🧩 Kit', devStatus: 'READY_FOR_DEV' }), []).out, /Ready for dev on a section named 🧩 — ask/);
 });
