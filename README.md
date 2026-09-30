@@ -204,7 +204,7 @@ A running agent reads its instructions when its session starts, so a changed rul
 node ~/.claude/skills/agents-init/modules/design-first/scripts/figma-inbox.mjs [<section-id>...]
 ```
 
-What the reviewer has said on the `WIP` page: per section, the state its name claims, the Ready for dev or Completed flag Figma holds, what follows from the two — flip to 🟢, the choice a framed comment made, a choice that is unclear, a section to promote — and every open comment with the frames its frame covers, by their letters. Without ids it reads every section on the page named by `figma.wip.page`, in `figma.wip.file` when the `WIP` page lives in a file of its own. It never writes: the flip and the `decided` line are the agent's to make after reading it.
+What the reviewer has said on the `WIP` page: per section, the state its name claims, the Ready for dev flag Figma holds, what follows from the two — flip to 🟢, the choice a framed comment made, a choice that is unclear — and every open comment with the frames its frame covers, by their letters. Without ids it reads every section on the page named by `figma.wip.page`, in `figma.wip.file` when the `WIP` page lives in a file of its own. It never writes: the flip and the `decided` line are the agent's to make after reading it.
 
 It exits `0` after printing and `2` when it could not run; it gates nothing. `--from <dir>` reads `file.json`, `nodes.json` and `comments.json` instead of the network: `node --test modules/design-first/scripts/test/figma-inbox.test.mjs`.
 

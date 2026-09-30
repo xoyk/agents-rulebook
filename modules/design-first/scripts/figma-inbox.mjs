@@ -214,7 +214,10 @@ function verdict(ix, comments) {
       }
     }
   } else if (flag === 'COMPLETED') {
-    lines.push('accepted on a build — promote the section');
+    // Not a signal here: acceptance on a build is the user's word in the chat.
+    // Until 30 September 2026 this line said «promote the section», on a flag
+    // none of the projects' plans offers.
+    lines.push('Completed is not a signal — acceptance on a build is said in the chat; ask before promoting');
   } else if (flag && state !== '🟢') {
     lines.push(`${FLAG[flag] ?? flag} on a section named ${state ?? 'without a state'} — ask what it means`);
   } else if (!flag && state === '🟢') {
