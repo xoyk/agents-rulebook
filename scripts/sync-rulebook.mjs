@@ -58,6 +58,7 @@ const TEMPLATES = [
   "modules/release/MODULE.md",
   "modules/publishing/MODULE.md",
   "modules/team-feed/MODULE.md",
+  "modules/apple/MODULE.md",
   "templates/AGENTS.tail.md",
 ];
 

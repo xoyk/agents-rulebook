@@ -14,6 +14,7 @@
  *   node <skill>/scripts/install.mjs                  # do whatever is missing
  *   node <skill>/scripts/install.mjs --basis adopted  # stamp a rulebook not assembled here
  *   node <skill>/scripts/install.mjs --git-init       # no repository here yet: create a local one first
+ *   node <skill>/scripts/install.mjs --apple-team <id> # keep the Apple Team for this machine (apple module)
  *   node <skill>/scripts/install.mjs --check          # say what is missing, write nothing
  *   node <skill>/scripts/install.mjs --check --all    # the same for every project in the registry
  *   node <skill>/scripts/install.mjs --pre-commit     # print the git hook, for adding to one already there
@@ -64,6 +65,11 @@ const args = process.argv.slice(2);
 const check = args.includes("--check");
 const all = args.includes("--all");
 const gitInit = args.includes("--git-init");
+const appleTeamArg = args.includes("--apple-team") ? args[args.indexOf("--apple-team") + 1] : null;
+if (appleTeamArg !== null && !/^[A-Z0-9]{10}$/.test(appleTeamArg ?? "")) {
+  console.error(`error: --apple-team takes a 10-character Team ID, got '${appleTeamArg}'.`);
+  process.exit(2);
+}
 const basis = args.includes("--basis") ? args[args.indexOf("--basis") + 1] : "install";
 if (!["install", "adopted"].includes(basis)) {
   console.error(`error: --basis must be 'install' or 'adopted', got '${basis}'.`);
@@ -319,7 +325,96 @@ function install(root) {
     }
   }
 
+  // ---------------------------------------------------------------- apple team
+  if (readFileSync(agents, "utf8").includes("<!-- rule:apple-team -->")) {
+    appleTeam(root, Array.isArray(list) ? list.map(expand) : [], report, act);
+  }
+
   return { lines, open };
+}
+
+/*
+ * The apple module's Team: one per person, kept once per machine and copied into
+ * the project's local signing file — modules/apple/MODULE.md, "The Team is found,
+ * not asked for twice". On 28 September 2026 4FH needed it on its first device
+ * build, and it was found in another project on the machine in one search; the
+ * user asked for the install to do that search. It is offered, never picked:
+ * two teams on one machine is ordinary.
+ */
+const APPLE = join(CONFIG, "apple.json");
+const SKIP_DIRS = new Set(["node_modules", ".git", "DerivedData", "Pods", "build", ".build", "worktrees"]);
+
+function appleTeam(root, recipients, report, act) {
+  if (appleTeamArg) {
+    act("apple team", `${appleTeamArg} kept for this machine in ${home(APPLE)}`, () => {
+      mkdirSync(CONFIG, { recursive: true });
+      writeFileSync(APPLE, JSON.stringify({ teamId: appleTeamArg }, null, 2) + "\n");
+    });
+  }
+  const team = appleTeamArg ?? readJson(APPLE)?.teamId ?? null;
+  if (!team) {
+    const found = new Map();
+    for (const r of recipients) {
+      if (resolve(r) === resolve(root) || !existsSync(r)) continue;
+      for (const id of teamIdsIn(r)) found.set(id, [...(found.get(id) ?? []), home(r)]);
+    }
+    if (!found.size) return report("hand", "apple team", "none on this machine and none in the registry's projects — pass --apple-team <id> (Xcode → Settings → Accounts)");
+    const offers = [...found].map(([id, where]) => `${id} (in ${where.join(", ")})`).join("; ");
+    return report("hand", "apple team", `not kept on this machine yet; found ${offers} — confirm one with --apple-team <id>`);
+  }
+  if (!appleTeamArg) report("ok", "apple team", `${team} (${home(APPLE)})`);
+
+  // Where this project takes its Team from: an xcconfig that optionally
+  // includes a local file, or an Expo app.json.
+  const include = findFiles(root, (f) => f.endsWith(".xcconfig"))
+    .find((f) => /#include\?\s+"Signing\.local\.xcconfig"/.test(readFileSync(f, "utf8")));
+  if (include) {
+    const local = join(dirname(include), "Signing.local.xcconfig");
+    const shown = home(relative(root, local));
+    if (!existsSync(local)) {
+      if (tryGit(root, "check-ignore", "-q", local) === null && tryGit(root, "rev-parse", "--show-toplevel") !== null) {
+        return report("hand", "signing", `${shown} is not ignored by git — ignore it before the Team goes in`);
+      }
+      return act("signing", `${shown} with DEVELOPMENT_TEAM = ${team}`, () =>
+        writeFileSync(local, `// The Team for device builds — not committed (see ${relative(dirname(local), include)}).\nDEVELOPMENT_TEAM = ${team}\nCODE_SIGN_STYLE = Automatic\n`));
+    }
+    const has = readFileSync(local, "utf8").match(/DEVELOPMENT_TEAM\s*=\s*([A-Z0-9]{10})/)?.[1];
+    if (has === team) return report("ok", "signing", `${shown} signs with ${team}`);
+    return report("hand", "signing", `${shown} has ${has ?? "no Team"}, the machine keeps ${team} — left alone`);
+  }
+  const expo = findFiles(root, (f) => f.endsWith("/app.json")).find((f) => readJson(f)?.expo?.ios);
+  if (expo) {
+    const has = readJson(expo).expo.ios.appleTeamId;
+    if (has === team) return report("ok", "signing", `${home(relative(root, expo))} ios.appleTeamId is ${team}`);
+    return report("hand", "signing", `${home(relative(root, expo))} ios.appleTeamId is ${has ?? "unset"} — set it to ${team}`);
+  }
+  report("hand", "signing", 'no xcconfig with #include? "Signing.local.xcconfig" and no Expo app.json — wire one, as the apple module says');
+}
+
+// Team IDs a project already signs with: xcconfigs, Xcode project files, Expo app.json.
+function teamIdsIn(root) {
+  const ids = new Set();
+  for (const f of findFiles(root, (f) => f.endsWith(".xcconfig") || f.endsWith(".pbxproj") || f.endsWith("/app.json"))) {
+    const text = readFileSync(f, "utf8");
+    for (const m of text.matchAll(/(?:DEVELOPMENT_TEAM\s*=\s*"?|"appleTeamId"\s*:\s*")([A-Z0-9]{10})\b/g)) ids.add(m[1]);
+  }
+  return ids;
+}
+
+// A shallow walk: four levels, none of the directories that hold copies or builds.
+function findFiles(root, want, depth = 4, out = []) {
+  let entries = [];
+  try { entries = readdirSync(root, { withFileTypes: true }); } catch { return out; }
+  for (const e of entries) {
+    const p = join(root, e.name);
+    if (e.isDirectory() && !e.name.endsWith(".xcodeproj")) {
+      if (depth > 0 && !SKIP_DIRS.has(e.name)) findFiles(p, want, depth - 1, out);
+    } else if (e.isDirectory()) {
+      const pbx = join(p, "project.pbxproj");
+      if (existsSync(pbx) && want(pbx)) out.push(pbx);
+    } else if (want(p)) out.push(p);
+  }
+  return out;
 }
 
 // Headings without an anchor above them, and blanks nobody filled. Fenced code
