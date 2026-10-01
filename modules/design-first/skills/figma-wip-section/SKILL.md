@@ -31,6 +31,14 @@ here reaches every project at once:
 
 ## Bindings: what a project supplies
 
+**The masters come from the shared library first.** When
+`~/.config/agents-rulebook/figma-library.json` exists and says the library is
+published, the banner, `Brief`, row label, caption and note are imported by the
+keys it lists — see figma-new-file, step 0 — and `wip.masters` below is only the
+fallback for a project the library cannot reach. A section is still assembled
+by the procedure here: Figma does not publish sections, so the template cannot
+be a library component.
+
 The procedure below is the same everywhere. What differs — which file, which
 template, which library, which colours — is read from the project, in the
 `figma.wip` block of `.claude/rulebook.json`, next to the keys the audit already

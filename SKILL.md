@@ -54,7 +54,7 @@ the template by meaning rather than by heading, and mark everything else
 `<!-- local:<id> -->`. It is a one-off job, and until it is done the copy cannot
 be compared with the canon or with any other project.
 
-### 2. Ask six things, and a seventh only where there is no git
+### 2. Ask six things, and two more only where they apply
 
 Briefly, as one question through the choice tool:
 
@@ -85,7 +85,21 @@ Briefly, as one question through the choice tool:
    Apple app at all, not about the App Store: a device build needs the Team
    from the first day, releases or none.
 
-7. **Only when step 1 found no repository: whether to start one.** Local only —
+7. **Only when design is in the loop: how the design space is arranged.** Two
+   answers. *Many projects in one space* — a person or a studio keeping every
+   app they build side by side, a file each. *One project, many files* — a
+   product or a product line spread over a library, the screens, the emails.
+   The answer goes into `.claude/rulebook.json` as `figma.space`,
+   `many-projects` or `one-project`, and it decides what a file's cover says in
+   large type: the project's name in the first case, what the file is in the
+   second. Offer the first as the default for a solo developer.
+
+   It is asked because it cannot be seen from inside one project. On
+   30 September 2026 Budgy's cover came out reading "Product — design" in a
+   Figma project where every neighbouring file was another app's design: the
+   cover step had been written for the second arrangement and assumed it.
+
+8. **Only when step 1 found no repository: whether to start one.** Local only —
    `git init` on `main`, no remote, nothing committed. Offer "yes" first and
    mark it recommended: every rule in the core assumes a repository, and so
    does the pre-commit hook that keeps the page current. The answer yes is
