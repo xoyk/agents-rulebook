@@ -24,6 +24,42 @@ and never copied into a project:
 ~/.claude/skills/agents-init/modules/design-first/skills/figma-new-file/SKILL.md
 ```
 
+## 0. Instance from the shared library, when there is one
+
+Masters every project needs — the WIP section's banner, `Brief`, row label,
+caption and note, the state fills, the `Thumbnail` cover — are not rebuilt in
+each file. They live once, in a library file published to the person's team,
+and a project instances them by key (`figma.importComponentByKeyAsync`). Built
+per file, they drifted within a day: on 1 October 2026 Pult's cover was rebuilt
+twice in an afternoon to catch up with a canon its neighbours had already
+followed, while Budgy and chesswall each carried their own copy of the same
+masters.
+
+The library is the person's, not the canon's, so its keys live outside this
+public repository, next to the registry:
+
+```json
+// ~/.config/agents-rulebook/figma-library.json
+{
+  "library": { "name": "Rulebook Kit", "file": "<file key>", "team": "<team>", "published": true },
+  "space": "many-projects",
+  "components": { "banner": "<key>", "brief": "<key>", "rowLabel": "<key>",
+                  "caption": "<key>", "note": "<key>", "thumbnail": "<key>",
+                  "coverIconSlot": "<key>", "coverPictureSlot": "<key>" }
+}
+```
+
+- **Read it first.** No file, or `published: false`, and the steps below fall
+  back to building the masters in the file's own `Kit` page, as before — and the
+  report says the library was not used, and why.
+- **Publishing is a person's click**, in Figma's Assets panel: the Plugin API
+  cannot publish, and an unpublished component cannot be imported by key. The
+  report that changes a master puts *Publish the library* under `Needed from
+  you`, and a file only sees the change once it accepts the library update.
+- **A library reaches its own team only** on Figma's Professional plan. A
+  project in another team builds its kit locally until the plan or the file
+  moves.
+
 ## 1. The plan is the user's word
 
 Create the file in the team or organisation the user names. When the account
@@ -79,7 +115,19 @@ size, among its neighbours. So it carries two large things and one small one:
   from the file's production page, cloned into a `Picture` frame and allowed to
   run off the edge. Not an illustration of the product, the product;
 - a **note**, small — one short line saying what the file holds, as a text
-  property.
+  property;
+- the **app icon**, above the name — **always**, not only when there is
+  nothing to photograph. On 1 October 2026 Pult's cover was built without it
+  and the user asked for it back: the icon is how the product is recognised
+  everywhere else, in the Dock and the menu bar.
+
+From the library, the icon and the picture are **instance-swap properties**: the
+project makes two components of its own, `Cover icon — <project>` (220×220, the
+app icon itself) and `Cover picture — <project>` (900×760, the cloned frames),
+and swaps them into the `Thumbnail` instance. The ground comes from the
+library's `Cover` collection — a `Light` and a `Dark` mode, chosen on the
+instance — and a light ground is the default: on 1 October 2026 a dark app icon
+on a dark cover disappeared into it.
 
 **What the name is depends on how the design space is arranged**, which is
 asked at install and kept in `figma.space`:
@@ -147,6 +195,11 @@ cover is changed inside its frame — the instance swapped or its properties
 edited — never by deleting the frame and placing a new one.
 
 ## 6. The kit
+
+**With the library, the file's `Kit` page holds only the product's own
+masters** — the app shell, the controls the product invents — and the cover
+components of step 5. Everything below about building the WIP masters applies
+only without one.
 
 Build the masters figma-wip-section instances — banner with a state pill,
 `Brief` with its row master, row label, caption, note — on a `Kit — WIP section
