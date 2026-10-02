@@ -129,6 +129,18 @@ library's `Cover` collection — a `Light` and a `Dark` mode, chosen on the
 instance — and a light ground is the default: on 1 October 2026 a dark app icon
 on a dark cover disappeared into it.
 
+**An instance-swap hands over the whole node, so nothing of the slot survives
+it.** The rounding belongs to the placeholder the library ships, not to the
+slot: `Cover slot / Icon` is an instance with a corner radius of 50, `Cover
+slot / Picture` with 24, and the `Thumbnail` around them has none. Swap in a
+project's own component with square corners and the cover comes out square,
+while the API reports nothing wrong — there is no override to lose, because the
+radius was never on the slot. So **`Cover icon — <project>` carries its own
+radius**, 50 at 220×220, and the picture its own 24. Measured 2 October 2026 in
+chesswall, whose cover sat sharp-cornered beside rounded neighbours until its
+owner asked why; the step had said what the two components must be and not what
+they must look like, so following it to the letter produced the fault.
+
 **What the name is depends on how the design space is arranged**, which is
 asked at install and kept in `figma.space`:
 
