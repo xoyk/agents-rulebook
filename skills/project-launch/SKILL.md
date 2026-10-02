@@ -73,6 +73,26 @@ machine.
   not move after something that needs it. Store screenshots need the demo seed;
   the landing needs the store link; the promotion needs the landing.
 
+## The board in Figma
+
+The same plan, drawn: `Launch checklist` in the person's shared Figma library
+(figma-new-file, step 0), twelve phase cards of `Launch step` instances, each
+with a `State` — `Open`, `Done`, `Struck` — an `Owner`, and `Long wait`. Its key
+is `components.launchChecklist` in `~/.config/agents-rulebook/figma-library.json`,
+next to the WIP masters, because the library is the person's and this
+repository is public.
+
+- **Insert one instance per project** with `figma.importComponentByKeyAsync`,
+  on a page of its own after the cover, and set each step's `State` from the
+  project's `LAUNCH.md`. Set it through the nested instance's own properties —
+  a detached copy stops receiving the library's corrections.
+- **`LAUNCH.md` is the record; the board is its picture.** Tick the file
+  first, then the board, in the same step. A board ahead of its file has
+  nothing behind it.
+- **A step added to the template is added to the board's master in the same
+  change**, and the library published (a person's click). Instances pick it up
+  when their files accept the update; their states on the old steps stay.
+
 ## When the template changes
 
 The template is the canon; a project's copy is not synced with it the way
