@@ -261,6 +261,16 @@ decision, the first thing that goes wrong. And repeat the template's own main
 rule, from *How to extend this file*: a rule without the story that produced it
 survives until the first argument about it.
 
+If the project is a product someone will ship — to a store, to a page, to
+customers — offer its launch plan in the same report: the `project-launch`
+procedure installs `LAUNCH.md` beside the backlog and walks it once with the
+user. The rules say how the work is done; the plan says what comes after what,
+and which steps take weeks no work shortens.
+
+```text
+~/.claude/skills/agents-init/skills/project-launch/SKILL.md
+```
+
 ## Reading the file happens in one place
 
 `scripts/lib/sections.mjs` is the only reading of `AGENTS.md`: where a section
