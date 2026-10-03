@@ -223,11 +223,12 @@ function install(root) {
    * work is visible, and the first commit is the person reading the agreements
    * and deciding they are right; neither belongs to an install.
    *
-   * On 26 September 2026 4FH was installed as a plain directory. The script said
-   * `skip pre-commit: not a git repository`, a line that reads like a decision
-   * although nobody had made one, and the agent then ran `git init` on its own
-   * initiative. The init was right and the manner was wrong: whether a directory
-   * becomes a repository is the user's question, and it had not been asked.
+   * On 26 September 2026 one project was installed as a plain directory. The
+   * script said `skip pre-commit: not a git repository`, a line that reads like
+   * a decision although nobody had made one, and the agent then ran `git init`
+   * on its own initiative. The init was right and the manner was wrong: whether
+   * a directory becomes a repository is the user's question, and it had not
+   * been asked.
    */
   let top = tryGit(root, "rev-parse", "--show-toplevel");
   if (top === null) {
@@ -297,9 +298,9 @@ function install(root) {
     /*
      * An entry that is a worktree of this project stands in for it, and badly:
      * the day the worktree is removed, the project drops out of every report
-     * without a word. On 26 September 2026 the registry listed a worktree of
-     * one project, and not the project itself. So such an entry is replaced by
-     * the project.
+     * without a word. On 26 September 2026 the registry listed one project's
+     * worktree and not the project itself. So such an entry is replaced by the
+     * project.
      */
     const here = expand(project);
     const listed = list.some((p) => expand(p) === here);

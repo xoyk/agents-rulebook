@@ -107,8 +107,8 @@ Briefly, as one question through the choice tool:
    skips the git hooks and says so.
 
    Never run `git init` without asking, however obviously right it looks. On
-   26 September 2026 4FH was installed as a plain directory and the agent
-   initialised it on its own initiative; the repository was wanted, the
+   26 September 2026 one project was installed as a plain directory and the
+   agent initialised it on its own initiative; the repository was wanted, the
    unasked question was not. A remote is not part of this question at all:
    where the work becomes visible is decided later, by the user.
 
