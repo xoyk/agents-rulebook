@@ -1,0 +1,1810 @@
+{
+ "version": 1,
+ "page": "Components",
+ "collections": [
+  {
+   "name": "Rulebook",
+   "modes": [
+    "Light"
+   ],
+   "vars": [
+    {
+     "name": "state/drawing",
+     "type": "COLOR",
+     "values": {
+      "Light": "#fff4d1"
+     }
+    },
+    {
+     "name": "state/review",
+     "type": "COLOR",
+     "values": {
+      "Light": "#ddebff"
+     }
+    },
+    {
+     "name": "state/approved",
+     "type": "COLOR",
+     "values": {
+      "Light": "#ddf5e3"
+     }
+    },
+    {
+     "name": "state/parked",
+     "type": "COLOR",
+     "values": {
+      "Light": "#ececec"
+     }
+    },
+    {
+     "name": "state-dot/drawing",
+     "type": "COLOR",
+     "values": {
+      "Light": "#e5a800"
+     }
+    },
+    {
+     "name": "state-dot/review",
+     "type": "COLOR",
+     "values": {
+      "Light": "#0a84ff"
+     }
+    },
+    {
+     "name": "state-dot/approved",
+     "type": "COLOR",
+     "values": {
+      "Light": "#28a745"
+     }
+    },
+    {
+     "name": "state-dot/parked",
+     "type": "COLOR",
+     "values": {
+      "Light": "#8e8e93"
+     }
+    },
+    {
+     "name": "kit/card",
+     "type": "COLOR",
+     "values": {
+      "Light": "#ffffff"
+     }
+    },
+    {
+     "name": "kit/label",
+     "type": "COLOR",
+     "values": {
+      "Light": "#8a8a8e"
+     }
+    },
+    {
+     "name": "kit/text",
+     "type": "COLOR",
+     "values": {
+      "Light": "#1d1d1f"
+     }
+    },
+    {
+     "name": "kit/note-edge",
+     "type": "COLOR",
+     "values": {
+      "Light": "#c77700"
+     }
+    }
+   ]
+  },
+  {
+   "name": "Cover",
+   "modes": [
+    "Light",
+    "Dark"
+   ],
+   "vars": [
+    {
+     "name": "cover/ground",
+     "type": "COLOR",
+     "values": {
+      "Light": "#f2f1f6",
+      "Dark": "#1e2026"
+     }
+    },
+    {
+     "name": "cover/name",
+     "type": "COLOR",
+     "values": {
+      "Light": "#1e2026",
+      "Dark": "#f2f2f5"
+     }
+    },
+    {
+     "name": "cover/note",
+     "type": "COLOR",
+     "values": {
+      "Light": "#6e6e73",
+      "Dark": "#8a8a8e"
+     }
+    },
+    {
+     "name": "cover/slot",
+     "type": "COLOR",
+     "values": {
+      "Light": "#e3e3e8",
+      "Dark": "#2c2f37"
+     }
+    }
+   ]
+  }
+ ],
+ "masters": [
+  {
+   "section": "WIP section masters",
+   "t": "COMPONENT",
+   "n": "Banner",
+   "id": "k1",
+   "x": 120,
+   "y": 120,
+   "w": 2400,
+   "h": 320,
+   "fills": [
+    {
+     "c": "#ffffff",
+     "v": "Rulebook/kit/card"
+    }
+   ],
+   "r": 24,
+   "desc": "WIP section banner: the feature as a person would say it; the pill and dot take the state fills. Rulebook Kit — the design-first module's shared master; projects instance it, never copy it.",
+   "lm": "VERTICAL",
+   "pad": [
+    56,
+    64,
+    56,
+    64
+   ],
+   "gap": 16,
+   "pa": "MIN",
+   "ca": "MIN",
+   "psm": "AUTO",
+   "csm": "FIXED",
+   "cpr": {},
+   "defs": [
+    {
+     "name": "Title",
+     "type": "TEXT",
+     "value": "Feature name"
+    },
+    {
+     "name": "State",
+     "type": "TEXT",
+     "value": "drawing"
+    },
+    {
+     "name": "Meta",
+     "type": "TEXT",
+     "value": "owner · date"
+    }
+   ],
+   "kids": [
+    {
+     "t": "TEXT",
+     "n": "Feature name",
+     "w": 2272,
+     "h": 125,
+     "fills": [
+      {
+       "c": "#1d1d1f",
+       "v": "Rulebook/kit/text"
+      }
+     ],
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {
+      "characters": "Title"
+     },
+     "chars": "Feature name",
+     "font": {
+      "family": "Inter",
+      "style": "Bold",
+      "variationSettings": {
+       "wght": 700,
+       "slnt": 0
+      }
+     },
+     "fs": 96,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "HEIGHT"
+    },
+    {
+     "t": "FRAME",
+     "n": "Meta line",
+     "w": 2272,
+     "h": 67,
+     "clip": true,
+     "lm": "HORIZONTAL",
+     "pad": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "gap": 24,
+     "pa": "MIN",
+     "ca": "CENTER",
+     "psm": "FIXED",
+     "csm": "AUTO",
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {},
+     "kids": [
+      {
+       "t": "FRAME",
+       "n": "State pill",
+       "w": 232,
+       "h": 67,
+       "fills": [
+        {
+         "c": "#fff4d1",
+         "v": "Rulebook/state/drawing"
+        }
+       ],
+       "r": 999,
+       "clip": true,
+       "lm": "HORIZONTAL",
+       "pad": [
+        10,
+        28,
+        10,
+        20
+       ],
+       "gap": 14,
+       "pa": "MIN",
+       "ca": "CENTER",
+       "psm": "AUTO",
+       "csm": "AUTO",
+       "lsh": "HUG",
+       "lsv": "HUG",
+       "cpr": {},
+       "kids": [
+        {
+         "t": "ELLIPSE",
+         "n": "State dot",
+         "w": 28,
+         "h": 28,
+         "fills": [
+          {
+           "c": "#e5a800",
+           "v": "Rulebook/state-dot/drawing"
+          }
+         ],
+         "lsh": "FIXED",
+         "lsv": "FIXED",
+         "cpr": {}
+        },
+        {
+         "t": "TEXT",
+         "n": "drawing",
+         "w": 142,
+         "h": 47,
+         "fills": [
+          {
+           "c": "#1d1d1f",
+           "v": "Rulebook/kit/text"
+          }
+         ],
+         "lsh": "HUG",
+         "lsv": "HUG",
+         "cpr": {
+          "characters": "State"
+         },
+         "chars": "drawing",
+         "font": {
+          "family": "Inter",
+          "style": "Semi Bold",
+          "variationSettings": {
+           "wght": 600,
+           "slnt": 0
+          }
+         },
+         "fs": 36,
+         "lh": {
+          "unit": "PERCENT",
+          "value": 129.99999523162842
+         },
+         "tar": "WIDTH_AND_HEIGHT"
+        }
+       ]
+      },
+      {
+       "t": "TEXT",
+       "n": "owner · date",
+       "w": 2016,
+       "h": 47,
+       "fills": [
+        {
+         "c": "#8a8a8e",
+         "v": "Rulebook/kit/label"
+        }
+       ],
+       "lsh": "FILL",
+       "lsv": "HUG",
+       "cpr": {
+        "characters": "Meta"
+       },
+       "chars": "owner · date",
+       "font": {
+        "family": "Inter",
+        "style": "Regular",
+        "variationSettings": {
+         "wght": 400,
+         "slnt": 0
+        }
+       },
+       "fs": 36,
+       "lh": {
+        "unit": "PERCENT",
+        "value": 129.99999523162842
+       },
+       "tar": "HEIGHT"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "section": "WIP section masters",
+   "t": "COMPONENT",
+   "n": "Brief row",
+   "id": "k2",
+   "x": 1800,
+   "y": 1125,
+   "w": 664,
+   "h": 34,
+   "desc": "One row of a Brief card. Rulebook Kit — the design-first module's shared master; projects instance it, never copy it.",
+   "lm": "HORIZONTAL",
+   "pad": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "gap": 24,
+   "pa": "MIN",
+   "ca": "MIN",
+   "psm": "FIXED",
+   "csm": "AUTO",
+   "cpr": {},
+   "defs": [
+    {
+     "name": "Label",
+     "type": "TEXT",
+     "value": "label"
+    },
+    {
+     "name": "Value",
+     "type": "TEXT",
+     "value": "value"
+    }
+   ],
+   "kids": [
+    {
+     "t": "TEXT",
+     "n": "label",
+     "w": 160,
+     "h": 34,
+     "fills": [
+      {
+       "c": "#8a8a8e",
+       "v": "Rulebook/kit/label"
+      }
+     ],
+     "lsh": "FIXED",
+     "lsv": "HUG",
+     "cpr": {
+      "characters": "Label"
+     },
+     "chars": "label",
+     "font": {
+      "family": "Inter",
+      "style": "Medium",
+      "variationSettings": {
+       "wght": 500,
+       "slnt": 0
+      }
+     },
+     "fs": 26,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "HEIGHT"
+    },
+    {
+     "t": "TEXT",
+     "n": "value",
+     "w": 480,
+     "h": 34,
+     "fills": [
+      {
+       "c": "#1d1d1f",
+       "v": "Rulebook/kit/text"
+      }
+     ],
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {
+      "characters": "Value"
+     },
+     "chars": "value",
+     "font": {
+      "family": "Inter",
+      "style": "Regular",
+      "variationSettings": {
+       "wght": 400,
+       "slnt": 0
+      }
+     },
+     "fs": 26,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "HEIGHT"
+    }
+   ]
+  },
+  {
+   "section": "WIP section masters",
+   "t": "COMPONENT",
+   "n": "Brief",
+   "id": "k3",
+   "x": 120,
+   "y": 560,
+   "w": 760,
+   "h": 526,
+   "fills": [
+    {
+     "c": "#ffffff",
+     "v": "Rulebook/kit/card"
+    }
+   ],
+   "r": 24,
+   "desc": "Brief card: the rows design-first requires, in order, all present. Add rows a project needs (ticket, audit…); never drop one. Rulebook Kit — the design-first module's shared master; projects instance it, never copy it.",
+   "lm": "VERTICAL",
+   "pad": [
+    48,
+    48,
+    48,
+    48
+   ],
+   "gap": 20,
+   "pa": "MIN",
+   "ca": "MIN",
+   "psm": "AUTO",
+   "csm": "FIXED",
+   "cpr": {},
+   "defs": [],
+   "kids": [
+    {
+     "t": "TEXT",
+     "n": "Brief",
+     "w": 94,
+     "h": 52,
+     "fills": [
+      {
+       "c": "#1d1d1f",
+       "v": "Rulebook/kit/text"
+      }
+     ],
+     "lsh": "HUG",
+     "lsv": "HUG",
+     "cpr": {},
+     "chars": "Brief",
+     "font": {
+      "family": "Inter",
+      "style": "Bold",
+      "variationSettings": {
+       "wght": 700,
+       "slnt": 0
+      }
+     },
+     "fs": 40,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "WIDTH_AND_HEIGHT"
+    },
+    {
+     "t": "INSTANCE",
+     "n": "row: what",
+     "w": 664,
+     "h": 34,
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {},
+     "ref": "k2",
+     "props": {
+      "Value": "value",
+      "Label": "what"
+     }
+    },
+    {
+     "t": "INSTANCE",
+     "n": "row: why",
+     "w": 664,
+     "h": 34,
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {},
+     "ref": "k2",
+     "props": {
+      "Value": "value",
+      "Label": "why"
+     }
+    },
+    {
+     "t": "INSTANCE",
+     "n": "row: replaces",
+     "w": 664,
+     "h": 34,
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {},
+     "ref": "k2",
+     "props": {
+      "Value": "value",
+      "Label": "replaces"
+     }
+    },
+    {
+     "t": "INSTANCE",
+     "n": "row: entry points",
+     "w": 664,
+     "h": 34,
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {},
+     "ref": "k2",
+     "props": {
+      "Value": "value",
+      "Label": "entry points"
+     }
+    },
+    {
+     "t": "INSTANCE",
+     "n": "row: decided",
+     "w": 664,
+     "h": 34,
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {},
+     "ref": "k2",
+     "props": {
+      "Value": "value",
+      "Label": "decided"
+     }
+    },
+    {
+     "t": "INSTANCE",
+     "n": "row: owner",
+     "w": 664,
+     "h": 34,
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {},
+     "ref": "k2",
+     "props": {
+      "Value": "value",
+      "Label": "owner"
+     }
+    },
+    {
+     "t": "INSTANCE",
+     "n": "row: state",
+     "w": 664,
+     "h": 34,
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {},
+     "ref": "k2",
+     "props": {
+      "Value": "value",
+      "Label": "state"
+     }
+    }
+   ]
+  },
+  {
+   "section": "WIP section masters",
+   "t": "COMPONENT",
+   "n": "Row label",
+   "id": "k4",
+   "x": 1000,
+   "y": 560,
+   "w": 1400,
+   "h": 120,
+   "desc": "Heads a row of frames; a rejected row reads «🧪 X · Rejected — what lost». Rulebook Kit — the design-first module's shared master; projects instance it, never copy it.",
+   "lm": "VERTICAL",
+   "pad": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "gap": 8,
+   "pa": "MIN",
+   "ca": "MIN",
+   "psm": "AUTO",
+   "csm": "FIXED",
+   "cpr": {},
+   "defs": [
+    {
+     "name": "Label",
+     "type": "TEXT",
+     "value": "A · Step of the flow"
+    },
+    {
+     "name": "Context",
+     "type": "TEXT",
+     "value": "What this row shows"
+    }
+   ],
+   "kids": [
+    {
+     "t": "TEXT",
+     "n": "A · Step of the flow",
+     "w": 1400,
+     "h": 73,
+     "fills": [
+      {
+       "c": "#1d1d1f",
+       "v": "Rulebook/kit/text"
+      }
+     ],
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {
+      "characters": "Label"
+     },
+     "chars": "A · Step of the flow",
+     "font": {
+      "family": "Inter",
+      "style": "Semi Bold",
+      "variationSettings": {
+       "wght": 600,
+       "slnt": 0
+      }
+     },
+     "fs": 56,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "HEIGHT"
+    },
+    {
+     "t": "TEXT",
+     "n": "What this row shows",
+     "w": 1400,
+     "h": 39,
+     "fills": [
+      {
+       "c": "#8a8a8e",
+       "v": "Rulebook/kit/label"
+      }
+     ],
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {
+      "characters": "Context"
+     },
+     "chars": "What this row shows",
+     "font": {
+      "family": "Inter",
+      "style": "Regular",
+      "variationSettings": {
+       "wght": 400,
+       "slnt": 0
+      }
+     },
+     "fs": 30,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "HEIGHT"
+    }
+   ]
+  },
+  {
+   "section": "WIP section masters",
+   "t": "COMPONENT",
+   "n": "Caption",
+   "id": "k5",
+   "x": 1000,
+   "y": 740,
+   "w": 660,
+   "h": 79,
+   "desc": "Sits above every frame: letter, name, one line of context. Rulebook Kit — the design-first module's shared master; projects instance it, never copy it.",
+   "lm": "VERTICAL",
+   "pad": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "gap": 6,
+   "pa": "MIN",
+   "ca": "MIN",
+   "psm": "AUTO",
+   "csm": "FIXED",
+   "cpr": {},
+   "defs": [
+    {
+     "name": "Title",
+     "type": "TEXT",
+     "value": "A1 · Frame name"
+    },
+    {
+     "name": "Context",
+     "type": "TEXT",
+     "value": "One line of context"
+    }
+   ],
+   "kids": [
+    {
+     "t": "TEXT",
+     "n": "A1 · Frame name",
+     "w": 660,
+     "h": 42,
+     "fills": [
+      {
+       "c": "#1d1d1f",
+       "v": "Rulebook/kit/text"
+      }
+     ],
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {
+      "characters": "Title"
+     },
+     "chars": "A1 · Frame name",
+     "font": {
+      "family": "Inter",
+      "style": "Semi Bold",
+      "variationSettings": {
+       "wght": 600,
+       "slnt": 0
+      }
+     },
+     "fs": 32,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "HEIGHT"
+    },
+    {
+     "t": "TEXT",
+     "n": "One line of context",
+     "w": 660,
+     "h": 31,
+     "fills": [
+      {
+       "c": "#8a8a8e",
+       "v": "Rulebook/kit/label"
+      }
+     ],
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {
+      "characters": "Context"
+     },
+     "chars": "One line of context",
+     "font": {
+      "family": "Inter",
+      "style": "Regular",
+      "variationSettings": {
+       "wght": 400,
+       "slnt": 0
+      }
+     },
+     "fs": 24,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "HEIGHT"
+    }
+   ]
+  },
+  {
+   "section": "WIP section masters",
+   "t": "COMPONENT",
+   "n": "Note",
+   "id": "k6",
+   "x": 1000,
+   "y": 879,
+   "w": 760,
+   "h": 186,
+   "fills": [
+    {
+     "c": "#ffffff",
+     "v": "Rulebook/kit/card"
+    }
+   ],
+   "strokes": [
+    {
+     "c": "#c77700",
+     "v": "Rulebook/kit/note-edge"
+    }
+   ],
+   "swi": [
+    0,
+    0,
+    0,
+    8
+   ],
+   "r": 24,
+   "desc": "Open question / proposal / constraint / deliberate finding, in the left column. Rulebook Kit — the design-first module's shared master; projects instance it, never copy it.",
+   "lm": "VERTICAL",
+   "pad": [
+    36,
+    36,
+    36,
+    36
+   ],
+   "gap": 10,
+   "pa": "MIN",
+   "ca": "MIN",
+   "psm": "AUTO",
+   "csm": "FIXED",
+   "cpr": {},
+   "defs": [
+    {
+     "name": "Title",
+     "type": "TEXT",
+     "value": "Note"
+    },
+    {
+     "name": "Text",
+     "type": "TEXT",
+     "value": "An open question, a constraint, or a finding declared deliberate."
+    }
+   ],
+   "kids": [
+    {
+     "t": "TEXT",
+     "n": "Note",
+     "w": 680,
+     "h": 36,
+     "fills": [
+      {
+       "c": "#1d1d1f",
+       "v": "Rulebook/kit/text"
+      }
+     ],
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {
+      "characters": "Title"
+     },
+     "chars": "Note",
+     "font": {
+      "family": "Inter",
+      "style": "Semi Bold",
+      "variationSettings": {
+       "wght": 600,
+       "slnt": 0
+      }
+     },
+     "fs": 28,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "HEIGHT"
+    },
+    {
+     "t": "TEXT",
+     "n": "An open question, a constraint, or a finding declared deliberate.",
+     "w": 680,
+     "h": 68,
+     "fills": [
+      {
+       "c": "#1d1d1f",
+       "v": "Rulebook/kit/text"
+      }
+     ],
+     "lsh": "FILL",
+     "lsv": "HUG",
+     "cpr": {
+      "characters": "Text"
+     },
+     "chars": "An open question, a constraint, or a finding declared deliberate.",
+     "font": {
+      "family": "Inter",
+      "style": "Regular",
+      "variationSettings": {
+       "wght": 400,
+       "slnt": 0
+      }
+     },
+     "fs": 26,
+     "lh": {
+      "unit": "PERCENT",
+      "value": 129.99999523162842
+     },
+     "tar": "HEIGHT"
+    }
+   ]
+  },
+  {
+   "section": "Cover",
+   "t": "COMPONENT",
+   "n": "Cover slot / Icon",
+   "id": "k7",
+   "x": 120,
+   "y": 120,
+   "w": 220,
+   "h": 220,
+   "fills": [
+    {
+     "c": "#e3e3e8",
+     "v": "Cover/cover/slot"
+    }
+   ],
+   "r": 50,
+   "desc": "Placeholder: swap it for the project's «Cover icon — <project>» component, 220×220 — the app icon itself. Rulebook Kit — the design-first module's shared master.",
+   "lm": "HORIZONTAL",
+   "pad": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "gap": 0,
+   "pa": "CENTER",
+   "ca": "CENTER",
+   "psm": "FIXED",
+   "csm": "FIXED",
+   "cpr": {},
+   "defs": [],
+   "kids": [
+    {
+     "t": "TEXT",
+     "n": "app icon",
+     "w": 115,
+     "h": 34,
+     "fills": [
+      {
+       "c": "#6e6e73",
+       "v": "Cover/cover/note"
+      }
+     ],
+     "lsh": "HUG",
+     "lsv": "HUG",
+     "cpr": {},
+     "chars": "app icon",
+     "font": {
+      "family": "Inter",
+      "style": "Medium",
+      "variationSettings": {
+       "wght": 500,
+       "slnt": 0
+      }
+     },
+     "fs": 28,
+     "tar": "WIDTH_AND_HEIGHT"
+    }
+   ]
+  },
+  {
+   "section": "Cover",
+   "t": "COMPONENT",
+   "n": "Cover slot / Picture",
+   "id": "k8",
+   "x": 420,
+   "y": 120,
+   "w": 900,
+   "h": 760,
+   "fills": [
+    {
+     "c": "#e3e3e8",
+     "v": "Cover/cover/slot"
+    }
+   ],
+   "r": 24,
+   "desc": "Placeholder: swap it for the project's «Cover picture — <project>» component, 900×760 — one or two production frames, cloned, running off the edge. It goes stale: replace when the product changes its face. Rulebook Kit — the design-first module's shared master.",
+   "lm": "HORIZONTAL",
+   "pad": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "gap": 0,
+   "pa": "CENTER",
+   "ca": "CENTER",
+   "psm": "FIXED",
+   "csm": "FIXED",
+   "cpr": {},
+   "defs": [],
+   "kids": [
+    {
+     "t": "TEXT",
+     "n": "production frames",
+     "w": 246,
+     "h": 34,
+     "fills": [
+      {
+       "c": "#6e6e73",
+       "v": "Cover/cover/note"
+      }
+     ],
+     "lsh": "HUG",
+     "lsv": "HUG",
+     "cpr": {},
+     "chars": "production frames",
+     "font": {
+      "family": "Inter",
+      "style": "Medium",
+      "variationSettings": {
+       "wght": 500,
+       "slnt": 0
+      }
+     },
+     "fs": 28,
+     "tar": "WIDTH_AND_HEIGHT"
+    }
+   ]
+  },
+  {
+   "section": "Cover",
+   "t": "COMPONENT",
+   "n": "Thumbnail",
+   "id": "k9",
+   "x": 1420,
+   "y": 120,
+   "w": 1280,
+   "h": 720,
+   "fills": [
+    {
+     "c": "#f2f1f6",
+     "v": "Cover/cover/ground"
+    }
+   ],
+   "clip": true,
+   "desc": "File cover, 1280×720 (canon figma-new-file step 5). For a space of many projects: the app icon, the project name large, a picture of the product large, a note small. Icon and Picture are swapped for the project's own components; the Cover collection's mode picks a light or dark ground. Wrap the instance in a plain frame on the Cover page — that frame is what «Set as thumbnail» takes. Rulebook Kit — the design-first module's shared master.",
+   "cpr": {},
+   "defs": [
+    {
+     "name": "Name",
+     "type": "TEXT",
+     "value": "Project"
+    },
+    {
+     "name": "Note",
+     "type": "TEXT",
+     "value": "platform · what the file holds"
+    },
+    {
+     "name": "Icon",
+     "type": "INSTANCE_SWAP",
+     "value": {
+      "ref": "k7"
+     }
+    },
+    {
+     "name": "Picture",
+     "type": "INSTANCE_SWAP",
+     "value": {
+      "ref": "k8"
+     }
+    }
+   ],
+   "kids": [
+    {
+     "t": "INSTANCE",
+     "n": "Cover slot / Picture",
+     "x": 720,
+     "y": 110,
+     "w": 900,
+     "h": 760,
+     "cpr": {
+      "mainComponent": "Picture"
+     },
+     "ref": "k8",
+     "props": {}
+    },
+    {
+     "t": "INSTANCE",
+     "n": "Cover slot / Icon",
+     "x": 80,
+     "y": 84,
+     "w": 220,
+     "h": 220,
+     "cpr": {
+      "mainComponent": "Icon"
+     },
+     "ref": "k7",
+     "props": {}
+    },
+    {
+     "t": "FRAME",
+     "n": "Text",
+     "x": 80,
+     "y": 330,
+     "w": 600,
+     "h": 167,
+     "clip": true,
+     "lm": "VERTICAL",
+     "pad": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "gap": 8,
+     "pa": "MIN",
+     "ca": "MIN",
+     "psm": "AUTO",
+     "csm": "FIXED",
+     "cpr": {},
+     "kids": [
+      {
+       "t": "TEXT",
+       "n": "Name",
+       "w": 600,
+       "h": 118,
+       "fills": [
+        {
+         "c": "#1e2026",
+         "v": "Cover/cover/name"
+        }
+       ],
+       "lsh": "FILL",
+       "lsv": "HUG",
+       "cpr": {
+        "characters": "Name"
+       },
+       "chars": "Project",
+       "font": {
+        "family": "Inter",
+        "style": "Bold",
+        "variationSettings": {
+         "wght": 700,
+         "slnt": 0
+        }
+       },
+       "fs": 120,
+       "lh": {
+        "unit": "PERCENT",
+        "value": 98.00000190734863
+       },
+       "ls": {
+        "unit": "PERCENT",
+        "value": -2
+       },
+       "tar": "HEIGHT"
+      },
+      {
+       "t": "TEXT",
+       "n": "Note",
+       "w": 600,
+       "h": 41,
+       "fills": [
+        {
+         "c": "#6e6e73",
+         "v": "Cover/cover/note"
+        }
+       ],
+       "lsh": "FILL",
+       "lsv": "HUG",
+       "cpr": {
+        "characters": "Note"
+       },
+       "chars": "platform · what the file holds",
+       "font": {
+        "family": "Inter",
+        "style": "Medium",
+        "variationSettings": {
+         "wght": 500,
+         "slnt": 0
+        }
+       },
+       "fs": 34,
+       "tar": "HEIGHT"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "section": "Launch checklist",
+   "t": "COMPONENT_SET",
+   "n": "Launch step",
+   "id": "k10",
+   "x": 80,
+   "y": 80,
+   "w": 360,
+   "h": 208,
+   "fills": [
+    {
+     "c": "#ffffff",
+     "v": "Rulebook/kit/card"
+    }
+   ],
+   "r": 12,
+   "desc": "One step of the launch path, from LAUNCH.md in the rulebook kit’s project-launch procedure. State: Open, Done, Struck (does not apply here). Owner: you, agent or both. Long wait: a wait no work shortens.",
+   "lm": "VERTICAL",
+   "pad": [
+    20,
+    20,
+    20,
+    20
+   ],
+   "gap": 12,
+   "pa": "MIN",
+   "ca": "MIN",
+   "psm": "AUTO",
+   "csm": "AUTO",
+   "defs": [
+    {
+     "name": "Step",
+     "type": "TEXT",
+     "value": "The problem, in one sentence a stranger understands"
+    },
+    {
+     "name": "Owner",
+     "type": "TEXT",
+     "value": "both"
+    },
+    {
+     "name": "Long wait",
+     "type": "BOOLEAN",
+     "value": false
+    }
+   ],
+   "kids": [
+    {
+     "t": "COMPONENT",
+     "n": "State=Open",
+     "id": "k11",
+     "w": 320,
+     "h": 48,
+     "lm": "HORIZONTAL",
+     "pad": [
+      5,
+      0,
+      5,
+      0
+     ],
+     "gap": 10,
+     "pa": "MIN",
+     "ca": "MIN",
+     "psm": "FIXED",
+     "csm": "AUTO",
+     "lsh": "FIXED",
+     "lsv": "HUG",
+     "cpr": {},
+     "kids": [
+      {
+       "t": "FRAME",
+       "n": "Marker slot",
+       "w": 16,
+       "h": 17,
+       "clip": true,
+       "lm": "VERTICAL",
+       "pad": [
+        1,
+        0,
+        0,
+        0
+       ],
+       "gap": 0,
+       "pa": "MIN",
+       "ca": "MIN",
+       "psm": "AUTO",
+       "csm": "AUTO",
+       "lsh": "HUG",
+       "lsv": "HUG",
+       "cpr": {},
+       "kids": [
+        {
+         "t": "FRAME",
+         "n": "Marker",
+         "w": 16,
+         "h": 16,
+         "strokes": [
+          {
+           "c": "#8a8a8e",
+           "v": "Rulebook/kit/label"
+          }
+         ],
+         "sw": 1.5,
+         "r": 8,
+         "clip": true,
+         "lsh": "FIXED",
+         "lsv": "FIXED",
+         "cpr": {}
+        }
+       ]
+      },
+      {
+       "t": "TEXT",
+       "n": "Step",
+       "w": 259,
+       "h": 38,
+       "fills": [
+        {
+         "c": "#1d1d1f",
+         "v": "Rulebook/kit/text"
+        }
+       ],
+       "lsh": "FILL",
+       "lsv": "HUG",
+       "cpr": {
+        "characters": "Step"
+       },
+       "chars": "The problem, in one sentence a stranger understands",
+       "font": {
+        "family": "Inter",
+        "style": "Regular",
+        "variationSettings": {
+         "wght": 400,
+         "slnt": 0
+        }
+       },
+       "fs": 14,
+       "lh": {
+        "unit": "PIXELS",
+        "value": 19
+       },
+       "tar": "HEIGHT"
+      },
+      {
+       "t": "TEXT",
+       "n": "Wait",
+       "w": 23,
+       "h": 19,
+       "vis": false,
+       "fills": [
+        {
+         "c": "#c77700",
+         "v": "Rulebook/kit/note-edge"
+        }
+       ],
+       "lsh": "FIXED",
+       "lsv": "FIXED",
+       "cpr": {
+        "visible": "Long wait"
+       },
+       "chars": "wait",
+       "font": {
+        "family": "Inter",
+        "style": "Semi Bold",
+        "variationSettings": {
+         "wght": 600,
+         "slnt": 0
+        }
+       },
+       "fs": 11,
+       "lh": {
+        "unit": "PIXELS",
+        "value": 19
+       },
+       "tar": "WIDTH_AND_HEIGHT"
+      },
+      {
+       "t": "TEXT",
+       "n": "Owner",
+       "w": 25,
+       "h": 19,
+       "fills": [
+        {
+         "c": "#8a8a8e",
+         "v": "Rulebook/kit/label"
+        }
+       ],
+       "lsh": "HUG",
+       "lsv": "HUG",
+       "cpr": {
+        "characters": "Owner"
+       },
+       "chars": "both",
+       "font": {
+        "family": "Inter",
+        "style": "Medium",
+        "variationSettings": {
+         "wght": 500,
+         "slnt": 0
+        }
+       },
+       "fs": 11,
+       "lh": {
+        "unit": "PIXELS",
+        "value": 19
+       },
+       "tar": "WIDTH_AND_HEIGHT"
+      }
+     ]
+    },
+    {
+     "t": "COMPONENT",
+     "n": "State=Done",
+     "id": "k12",
+     "w": 320,
+     "h": 48,
+     "lm": "HORIZONTAL",
+     "pad": [
+      5,
+      0,
+      5,
+      0
+     ],
+     "gap": 10,
+     "pa": "MIN",
+     "ca": "MIN",
+     "psm": "FIXED",
+     "csm": "AUTO",
+     "lsh": "FIXED",
+     "lsv": "HUG",
+     "cpr": {},
+     "kids": [
+      {
+       "t": "FRAME",
+       "n": "Marker slot",
+       "w": 16,
+       "h": 17,
+       "clip": true,
+       "lm": "VERTICAL",
+       "pad": [
+        1,
+        0,
+        0,
+        0
+       ],
+       "gap": 0,
+       "pa": "MIN",
+       "ca": "MIN",
+       "psm": "AUTO",
+       "csm": "AUTO",
+       "lsh": "HUG",
+       "lsv": "HUG",
+       "cpr": {},
+       "kids": [
+        {
+         "t": "FRAME",
+         "n": "Marker",
+         "w": 16,
+         "h": 16,
+         "fills": [
+          {
+           "c": "#28a745",
+           "v": "Rulebook/state-dot/approved"
+          }
+         ],
+         "r": 8,
+         "clip": true,
+         "lsh": "FIXED",
+         "lsv": "FIXED",
+         "cpr": {},
+         "kids": [
+          {
+           "t": "VECTOR",
+           "n": "Tick",
+           "x": 4,
+           "y": 4.5,
+           "w": 8,
+           "h": 6,
+           "strokes": [
+            {
+             "c": "#ffffff",
+             "v": "Rulebook/kit/card"
+            }
+           ],
+           "sw": 1.7999999523162842,
+           "sa": "CENTER",
+           "sc": "ROUND",
+           "sj": "ROUND",
+           "cpr": {},
+           "vp": [
+            {
+             "windingRule": "NONE",
+             "data": "M 0 3 L 3 6 L 8 0"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "t": "TEXT",
+       "n": "Step",
+       "w": 259,
+       "h": 38,
+       "fills": [
+        {
+         "c": "#1d1d1f",
+         "v": "Rulebook/kit/text"
+        }
+       ],
+       "lsh": "FILL",
+       "lsv": "HUG",
+       "cpr": {
+        "characters": "Step"
+       },
+       "chars": "The problem, in one sentence a stranger understands",
+       "font": {
+        "family": "Inter",
+        "style": "Regular",
+        "variationSettings": {
+         "wght": 400,
+         "slnt": 0
+        }
+       },
+       "fs": 14,
+       "lh": {
+        "unit": "PIXELS",
+        "value": 19
+       },
+       "tar": "HEIGHT"
+      },
+      {
+       "t": "TEXT",
+       "n": "Wait",
+       "w": 23,
+       "h": 19,
+       "vis": false,
+       "fills": [
+        {
+         "c": "#c77700",
+         "v": "Rulebook/kit/note-edge"
+        }
+       ],
+       "lsh": "FIXED",
+       "lsv": "FIXED",
+       "cpr": {
+        "visible": "Long wait"
+       },
+       "chars": "wait",
+       "font": {
+        "family": "Inter",
+        "style": "Semi Bold",
+        "variationSettings": {
+         "wght": 600,
+         "slnt": 0
+        }
+       },
+       "fs": 11,
+       "lh": {
+        "unit": "PIXELS",
+        "value": 19
+       },
+       "tar": "WIDTH_AND_HEIGHT"
+      },
+      {
+       "t": "TEXT",
+       "n": "Owner",
+       "w": 25,
+       "h": 19,
+       "fills": [
+        {
+         "c": "#8a8a8e",
+         "v": "Rulebook/kit/label"
+        }
+       ],
+       "lsh": "HUG",
+       "lsv": "HUG",
+       "cpr": {
+        "characters": "Owner"
+       },
+       "chars": "both",
+       "font": {
+        "family": "Inter",
+        "style": "Medium",
+        "variationSettings": {
+         "wght": 500,
+         "slnt": 0
+        }
+       },
+       "fs": 11,
+       "lh": {
+        "unit": "PIXELS",
+        "value": 19
+       },
+       "tar": "WIDTH_AND_HEIGHT"
+      }
+     ]
+    },
+    {
+     "t": "COMPONENT",
+     "n": "State=Struck",
+     "id": "k13",
+     "w": 320,
+     "h": 48,
+     "lm": "HORIZONTAL",
+     "pad": [
+      5,
+      0,
+      5,
+      0
+     ],
+     "gap": 10,
+     "pa": "MIN",
+     "ca": "MIN",
+     "psm": "FIXED",
+     "csm": "AUTO",
+     "lsh": "FIXED",
+     "lsv": "HUG",
+     "cpr": {},
+     "kids": [
+      {
+       "t": "FRAME",
+       "n": "Marker slot",
+       "w": 16,
+       "h": 17,
+       "clip": true,
+       "lm": "VERTICAL",
+       "pad": [
+        1,
+        0,
+        0,
+        0
+       ],
+       "gap": 0,
+       "pa": "MIN",
+       "ca": "MIN",
+       "psm": "AUTO",
+       "csm": "AUTO",
+       "lsh": "HUG",
+       "lsv": "HUG",
+       "cpr": {},
+       "kids": [
+        {
+         "t": "FRAME",
+         "n": "Marker",
+         "w": 16,
+         "h": 16,
+         "op": 0.5,
+         "strokes": [
+          {
+           "c": "#8a8a8e",
+           "v": "Rulebook/kit/label"
+          }
+         ],
+         "sw": 1.5,
+         "r": 8,
+         "clip": true,
+         "lsh": "FIXED",
+         "lsv": "FIXED",
+         "cpr": {},
+         "kids": [
+          {
+           "t": "RECTANGLE",
+           "n": "Bar",
+           "x": 4,
+           "y": 7.25,
+           "w": 8,
+           "h": 1.5,
+           "fills": [
+            {
+             "c": "#8a8a8e",
+             "v": "Rulebook/kit/label"
+            }
+           ],
+           "cpr": {}
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "t": "TEXT",
+       "n": "Step",
+       "w": 259,
+       "h": 38,
+       "fills": [
+        {
+         "c": "#8a8a8e",
+         "v": "Rulebook/kit/label"
+        }
+       ],
+       "lsh": "FILL",
+       "lsv": "HUG",
+       "cpr": {
+        "characters": "Step"
+       },
+       "chars": "The problem, in one sentence a stranger understands",
+       "font": {
+        "family": "Inter",
+        "style": "Regular",
+        "variationSettings": {
+         "wght": 400,
+         "slnt": 0
+        }
+       },
+       "fs": 14,
+       "lh": {
+        "unit": "PIXELS",
+        "value": 19
+       },
+       "td": "STRIKETHROUGH",
+       "tar": "HEIGHT"
+      },
+      {
+       "t": "TEXT",
+       "n": "Wait",
+       "w": 23,
+       "h": 19,
+       "vis": false,
+       "fills": [
+        {
+         "c": "#c77700",
+         "v": "Rulebook/kit/note-edge"
+        }
+       ],
+       "lsh": "FIXED",
+       "lsv": "FIXED",
+       "cpr": {
+        "visible": "Long wait"
+       },
+       "chars": "wait",
+       "font": {
+        "family": "Inter",
+        "style": "Semi Bold",
+        "variationSettings": {
+         "wght": 600,
+         "slnt": 0
+        }
+       },
+       "fs": 11,
+       "lh": {
+        "unit": "PIXELS",
+        "value": 19
+       },
+       "tar": "WIDTH_AND_HEIGHT"
+      },
+      {
+       "t": "TEXT",
+       "n": "Owner",
+       "w": 25,
+       "h": 19,
+       "fills": [
+        {
+         "c": "#8a8a8e",
+         "v": "Rulebook/kit/label"
+        }
+       ],
+       "lsh": "HUG",
+       "lsv": "HUG",
+       "cpr": {
+        "characters": "Owner"
+       },
+       "chars": "both",
+       "font": {
+        "family": "Inter",
+        "style": "Medium",
+        "variationSettings": {
+         "wght": 500,
+         "slnt": 0
+        }
+       },
+       "fs": 11,
+       "lh": {
+        "unit": "PIXELS",
+        "value": 19
+       },
+       "tar": "WIDTH_AND_HEIGHT"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
