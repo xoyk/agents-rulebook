@@ -19,7 +19,7 @@ The repository is the skill directory, so that clone is the whole installation. 
 | File | What it is |
 |---|---|
 | `AGENTS.md` | The agreements, assembled from the core, the chosen modules and the tail. The file every agent reads. |
-| `BACKLOG.md` | The list of work, started from `templates/BACKLOG.md`. |
+| `BACKLOG.md`, `backlog/` | The list of work: an index, and one file per area under `backlog/`, started from `templates/BACKLOG.md` and `templates/backlog/other.md`. |
 | `.claude/rulebook.json` | The stamp: which canon commit the file was built from, which modules, and a hash of every section by anchor. Project settings for the tools live here too. |
 | `.claude/rulebook.html` | The same agreements as one self-contained page, badged by origin and searchable. |
 
@@ -47,7 +47,7 @@ Updating the canon on this machine is `git pull` in the skill directory — a sk
 | `SKILL.md` | The installation procedure as a Claude Code skill: what to ask, what to assemble, what to stamp, what never to overwrite. |
 | `templates/AGENTS.core.md` | Always installed. Reporting back, saying what actually happened, names, the backlog, working in parallel and what worktrees do not fix, commits, pushing, merging and releasing, things only the user does. |
 | `templates/AGENTS.tail.md` | Always installed, always last. How to extend the file, section anchors, canon precedence. |
-| `templates/BACKLOG.md` | The backlog a project starts with. |
+| `templates/BACKLOG.md`, `templates/backlog/` | The backlog a project starts with: the index and its first area file. |
 | `modules/design-first/` | Code starts only after an approved frame: a `WIP` section per piece of work, approved by a flag and chosen by a framed comment, promoting its components with it, archiving, placement, the Figma painting traps that ship invisible text, one owner for a shared design file — plus `scripts/figma-audit.mjs`, which checks frames for all of it, `scripts/figma-inbox.mjs`, which reads the approvals and framed comments the plugin API cannot see, `skills/figma-wip-section/SKILL.md`, which says how a `WIP` section is built, and `skills/figma-new-file/SKILL.md`, which sets up a project's file — pages, kit and cover — before the first section. |
 | `modules/release/` | Release notes generated from per-audience commit trailers instead of remembered, the one tree a release is cut in, build numbers, and finishing a release. The store-specific sections are deleted where there is no store. |
 | `modules/publishing/` | A published file cannot be withdrawn, only overwritten; anything shown in public is drawn from invented data at the source. |

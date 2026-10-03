@@ -57,13 +57,33 @@ being addressed, not a claim about who is answering.
 <!-- rule:backlog -->
 ## The backlog
 
-`BACKLOG.md` holds everything known to be worth doing and nothing else — the
+The backlog holds everything known to be worth doing and nothing else — the
 answer to "what next?" and the place a bug or an idea goes when it is noticed
 in passing. Read it before proposing work, add to it rather than mentioning
 something once in a conversation, and close an item by deleting it.
 
-Add to the end of a section rather than the top: everybody edits this file, and
-appending turns most collisions into no collision at all.
+**`BACKLOG.md` is an index; the items live in `backlog/`, one file per area.**
+Write into the file for the area you are working in, at the end of its `##
+Bugs` or `## Next` section. A new area gets a new file and a row in the index.
+A project that still keeps its items in one file splits it when it takes this
+rule, not when the first conflict arrives.
+
+That split is the whole point, so do not undo it by putting items back in the
+index: **two branches working on different pages must not touch the same
+file.** In one project it was a single file until 2026-09-21, 2900 lines by
+then, and it produced a merge conflict on three consecutive pushes — every time
+the same shape, two branches appending to the end of the same section. The old
+rule here said to append rather than prepend, which only helps when the
+branches are in different sections; when they are not, git cannot pick an
+order and always stops.
+
+Appending is still right *within* a file, for the same reason.
+
+A union merge driver was considered and rejected: on the third of those
+conflicts the incoming item belonged to `## Next` while the local side ended
+inside a different section, so a union would have filed it under the wrong
+heading with no conflict raised. A merge that stops you beats one that quietly
+misfiles.
 
 <!-- rule:parallel-work -->
 ## Working in parallel
@@ -102,11 +122,15 @@ cd ../{{project}}-<topic>
 <!-- rule:worktree-limits -->
 ### What worktrees do not fix
 
-Files everybody edits — `BACKLOG.md`, this file, translation dictionaries. A
-worktree turns silent clobbering into an ordinary merge conflict, which is the
-win. Anything with a single shared history and no branches — a design file, a
-tracker, a live environment — is not helped at all and needs an owner named per
-piece of work.
+Files everybody edits — this file, translation dictionaries. A worktree turns
+silent clobbering into an ordinary merge conflict, which is the win. Anything
+with a single shared history and no branches — a design file, a tracker, a live
+environment — is not helped at all and needs an owner named per piece of work.
+
+The backlog used to head that list and no longer does: splitting it into
+`backlog/` by area means two branches on different pages never open the same
+file. That is the cheaper fix than merging well, and it is available to any
+shared file that can be cut along the lines people actually work on.
 
 <!-- rule:commits -->
 ## Commits

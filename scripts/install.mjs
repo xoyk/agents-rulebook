@@ -258,7 +258,15 @@ function install(root) {
   // ---------------------------------------------------------------- BACKLOG.md
   const backlog = join(root, "BACKLOG.md");
   if (existsSync(backlog)) report("ok", "BACKLOG.md", "present");
-  else act("BACKLOG.md", "from templates/BACKLOG.md", () => copyFileSync(join(SKILL_ROOT, "templates/BACKLOG.md"), backlog));
+  else act("BACKLOG.md", "from templates/BACKLOG.md, with backlog/other.md", () => {
+    copyFileSync(join(SKILL_ROOT, "templates/BACKLOG.md"), backlog);
+    // The index links to its first area file, so the two arrive together. An
+    // existing backlog is left alone either way: splitting one is the
+    // project's move, made when it takes the rule, not a script's.
+    mkdirSync(join(root, "backlog"), { recursive: true });
+    const other = join(root, "backlog/other.md");
+    if (!existsSync(other)) copyFileSync(join(SKILL_ROOT, "templates/backlog/other.md"), other);
+  });
 
   // ---------------------------------------------------------------- page
   // Rendered after the stamp, because the page badges sections against it.

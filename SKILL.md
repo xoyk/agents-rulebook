@@ -5,8 +5,8 @@ description: Installs working agreements into a project — AGENTS.md and BACKLO
 
 # Working agreements for a project
 
-Installs two files: `AGENTS.md` (the agreements) and `BACKLOG.md` (the list of
-work). Claude Code reads `AGENTS.md` by itself, like every other agent, so
+Installs `AGENTS.md` (the agreements) and the backlog: `BACKLOG.md`, an index,
+and `backlog/other.md`, its first area file. Claude Code reads `AGENTS.md` by itself, like every other agent, so
 there is no `CLAUDE.md` pointer: the canon installed a one-line `@AGENTS.md`
 until 26 September 2026, when Claude Code 2.1.282 was measured loading
 `AGENTS.md` with no `CLAUDE.md` at all. A `CLAUDE.md` a project already has
@@ -155,7 +155,9 @@ whatever is in place, so running it twice is safe:
 - **The stamp**, `.claude/rulebook.json`, through `stamp-rulebook.mjs` — only
   when there is none. For a rulebook that was not assembled here, pass
   `--basis adopted`.
-- **`BACKLOG.md`** from `templates/BACKLOG.md` — only when it does not exist.
+- **`BACKLOG.md`** from `templates/BACKLOG.md`, with `backlog/other.md` from
+  `templates/backlog/` — only when `BACKLOG.md` does not exist. An existing
+  single-file backlog is never split by the script.
 - **The page**, `.claude/rulebook.html`, through `render-rulebook.mjs`.
 - **The Claude Code hook** that redraws the page when `AGENTS.md` is edited,
   merged into the project's `.claude/settings.json`.
