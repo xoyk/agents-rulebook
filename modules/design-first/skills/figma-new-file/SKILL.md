@@ -45,13 +45,18 @@ public repository, next to the registry:
   "space": "many-projects",
   "components": { "banner": "<key>", "brief": "<key>", "rowLabel": "<key>",
                   "caption": "<key>", "note": "<key>", "thumbnail": "<key>",
-                  "coverIconSlot": "<key>", "coverPictureSlot": "<key>" }
+                  "coverIconSlot": "<key>", "coverPictureSlot": "<key>",
+                  "launchStep": "<key>", "launchChecklist": "<key>" }
 }
 ```
 
-- **Read it first.** No file, or `published: false`, and the steps below fall
-  back to building the masters in the file's own `Kit` page, as before — and the
-  report says the library was not used, and why.
+- **Read it first.** No file, or `published: false`, and the masters are built
+  into the file's own `Kit` page from this repository — `figma/bundle.mjs 0-10
+  --page Kit`, as the `figma-library` procedure says — and the report says the
+  library was not used, and why. Nobody else's library is ever looked for: a
+  clone of this repository on another machine has no access to one.
+- **Setting up a library of your own** is the same build into a file of its
+  own, then published: `skills/figma-library/SKILL.md`.
 - **Publishing is a person's click**, in Figma's Assets panel: the Plugin API
   cannot publish, and an unpublished component cannot be imported by key. The
   report that changes a master puts *Publish the library* under `Needed from

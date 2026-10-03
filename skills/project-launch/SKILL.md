@@ -75,10 +75,12 @@ machine.
 
 ## The board in Figma
 
-The same plan, drawn: `Launch checklist` in the person's shared Figma library
-(figma-new-file, step 0), twelve phase cards of `Launch step` instances, each
-with a `State` — `Open`, `Done`, `Struck` — an `Owner`, and `Long wait`. Its key
-is `components.launchChecklist` in `~/.config/agents-rulebook/figma-library.json`,
+The same plan, drawn: `Launch checklist`, twelve phase cards of `Launch step`
+instances, each with a `State` — `Open`, `Done`, `Struck` — an `Owner`, and
+`Long wait`. `board.mjs` beside this file builds it from `LAUNCH.md` into any
+file that has the masters — a person's library, or a project's own `Kit` page
+(the `figma-library` procedure). In a library its key is
+`components.launchChecklist` in `~/.config/agents-rulebook/figma-library.json`,
 next to the WIP masters, because the library is the person's and this
 repository is public.
 
@@ -95,9 +97,12 @@ repository is public.
 - **`LAUNCH.md` is the record; the board is its picture.** Tick the file
   first, then the board, in the same step. A board ahead of its file has
   nothing behind it.
-- **A step added to the template is added to the board's master in the same
-  change**, and the library published (a person's click). Instances pick it up
-  when their files accept the update; their states on the old steps stay.
+- **A step added to the template reaches the board by running `board.mjs`
+  again** in the library, in the same change, and the library is published (a
+  person's click). It updates the board in place, matching steps by their text:
+  instances pick the change up when their files accept the update, and their
+  ticks on steps that stayed are kept. A step whose text changes is a new step
+  to every project.
 
 ## When the template changes
 
