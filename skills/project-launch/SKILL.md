@@ -82,6 +82,12 @@ is `components.launchChecklist` in `~/.config/agents-rulebook/figma-library.json
 next to the WIP masters, because the library is the person's and this
 repository is public.
 
+- **Without that library there is no board, and nothing is missing.** The
+  key is read from the machine-local file; where the file, the key or the
+  library's publication is absent, skip this section and say so in the
+  report. `LAUNCH.md` is the whole plan on its own. A clone of this repository
+  on someone else's machine has no access to anybody's library, and must not
+  be sent looking for one.
 - **Insert one instance per project** with `figma.importComponentByKeyAsync`,
   on a page of its own after the cover, and set each step's `State` from the
   project's `LAUNCH.md`. Set it through the nested instance's own properties —
