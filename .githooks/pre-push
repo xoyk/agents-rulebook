@@ -1,0 +1,4 @@
+#!/bin/sh
+# This repository is public: nothing that belongs to one person goes out.
+# Enabled once per clone: git config core.hooksPath .githooks
+exec node "$(git rev-parse --show-toplevel)/scripts/privacy-guard.mjs" --pre-push
