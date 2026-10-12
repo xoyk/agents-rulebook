@@ -247,17 +247,23 @@ resize it to `Section content` plus twice the padding — resize first, then
 place, as the *Placement* rule warns — and assert that its `absoluteBoundingBox`
 contains every child's.
 
-## Frames are lettered, and the phone carries `m`
+## One row per platform, phone first
 
 Frames are lettered by row — `A1`, `A2`, `B1` — and the letters are what the
 `Brief` and every review comment refer to.
 
-A screen that ships on more than one form factor gets **one letter, and the
-phone frame carries an `m` suffix**: `A2` is the larger frame, `A2m` the same
-state on the phone. They are one step of the flow, so they share an index; a
-reviewer saying "A2" means the pair, and "A2m" when the phone is the point.
-Numbering them `A2` and `A3` would claim two steps, which is the misreading this
-exists to prevent. Twins sit side by side in one row, the larger first.
+**Each platform gets its own row, and the phone row comes first.** Row A is the
+flow on a phone, left to right from the first screen through every step and
+state to the last; row B is the same flow on the larger form factor; the next
+row is whatever explains it. Reading one platform along one line is easier
+than switching between a frame and its twin at every step, and the phone is
+where most people meet the product — 70% of the users of the project that set
+this rule, on 2026-10-13, after a month of tablet-first pairs had let the phone
+side fall behind unnoticed.
+
+The two rows share the index: `B5` is the larger frame of the step `A5` draws,
+so a reviewer names a step and its platform at once. A step with no frame on
+one platform leaves its index unused in that row rather than shifting the rest.
 
 ## Colour is the state
 
@@ -372,6 +378,48 @@ domains — `.md`, `.app`, and more. A link whose visible text is a file name wi
 such an extension opens that name as a website, not the repository. In an
 annotation, name the file in words and keep the file name only in the target.
 
+## Every branch the code draws gets a frame
+
+A section is read as the spec of what the product does. While reading a
+screen's code, list every condition that changes what is drawn — a flag, a plan
+or billing state, a permission, empty data, a device or orientation — and give
+each visible outcome its own frame, its caption naming the condition in the
+code's own terms. A frame for one branch makes the other look like a bug when
+somebody meets it on staging: on 2026-10-12 a warning drawn in the section did
+not appear on staging, because it shows only when billing is on and only that
+branch had been drawn.
+
+Confirm first that the code you read is reachable. A method nobody calls gives a
+confident, wrong spec: an unused settings-menu builder was drawn into a frame
+and cited in a pull request before anyone searched for its call site.
+
+## Look at what you changed, at the size the reviewer reads it
+
+The reviewer reads the canvas at full size; a whole-section screenshot at a
+fraction of that hides what they will find. Each rule is a defect that reached
+the reviewer as "done".
+
+- **Render the changed parts at 1.5–2x** — the row or list you touched — before
+  handing over, and again before cutting build tasks from the frames.
+- **Cloned frames keep their layer order.** An overlay or a separator copied
+  along with a frame must stay under barriers and dialogs; one copied
+  separator once ran through the dialog of ten frames. Fix a defect in every
+  frame that shares it, not only in your copy.
+- **An instance swap drops colour overrides**, strokes included. Copy fills and
+  strokes from a known-good sibling after the swap.
+- **Swapping a whole component carries overrides across** on layers with the
+  same name. Read `instance.overrides`, `resetOverrides()` if anything visual
+  came along, then set text properties and sizing again.
+- **A variant cloned inside a set loses its property references.** Copy them
+  from a sibling variant before asking for a library publish.
+- **The server render and the reviewer's client can disagree on width.** After
+  moving an instance into a new auto-layout row, set it `FIXED`, resize it to
+  the computed width, then `FILL` again, so the stored width is the drawn one.
+- **The REST images API has two quirks**: a frame cloned a moment ago can come
+  back without the text of its local-component instances, and a scrim bound to
+  a colour variable comes back fully opaque. Render the original, and hide the
+  scrim for one render to see the screen under it.
+
 ## Writing to the file
 
 A section is built in small writes — banner, then `Brief`, then one row at a
@@ -404,7 +452,8 @@ it was built from when the variable does not resolve.
 3. The banner is as wide as the rows below it, and its title is the feature as a
    person would say it, not the ticket's summary.
 4. Every frame has a caption and every row a label; the letters run in order,
-   and every phone frame carries the `m` of its twin.
+   the phone row comes before the larger one, and a step keeps its index in
+   both.
 5. Nothing inside a frame is a loose primitive: every element is an instance of
    a library component, a shared-kit master, or one of this section's own local
    masters — and no master this section owns is instanced by another section.
@@ -427,3 +476,5 @@ it was built from when the variable does not resolve.
     its section, that the frames of a row share a top line, or that sections on
     the page do not overlap one another — so items 1 and 7, and a glance along
     the page for a section hidden under another, are done by eye.
+11. Every changed frame was looked at closely, as *Look at what you changed*
+    describes — not judged from a whole-section screenshot.
