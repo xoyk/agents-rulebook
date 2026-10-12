@@ -26,6 +26,11 @@ replace it.
   move without them. Never pad it with work the agent is about to do anyway.
 - Write "Nothing" plainly when nothing is needed. An invented ask is worse than
   a blank one: it teaches the reader to skip the line.
+- **References are links.** A ticket, a pull request, a file or a page the reader
+  may want to open is a link in the answer and in every message drafted for
+  someone else — not a bare key to search for. Put it in the draft already, not
+  at send time (2026-10-11: replies to a teammate went out with bare ticket keys
+  and had to be redone).
 
 <!-- rule:honest-reporting -->
 ## Saying what actually happened
@@ -41,6 +46,24 @@ The report is worth exactly as much as its worst sentence.
   out, not quietly in the next commit. The user is making decisions on it.
 - **Work that was skipped is named.** Scaling the job down is the user's call;
   reporting a smaller job as the whole one takes that call away from them.
+
+<!-- rule:code-before-people -->
+## Ask the code before a person
+
+**A question the code can answer never goes to a person.** Before a message
+asks a teammate whether something exists, where it is edited or how it behaves,
+read the repository that holds it — every product the project depends on, not
+only this one: clone it shallowly into a scratch directory and read it. Only
+intent, plans and work nobody has committed go to people. On 2026-10-11 a draft
+asked a backend developer whether business hours could also be edited in the
+web portal; the portal's code answered it in a minute, and the question would
+have cost a teammate's time for nothing.
+
+**Confirm that the code you read runs.** A method or widget nobody calls gives
+a confident, wrong answer. An unused menu builder was described as the real
+menu twice — once into a design file, once into a pull request — before anyone
+searched for its call site. Find the caller before describing behaviour from
+code.
 
 <!-- rule:agent-names -->
 ## Names

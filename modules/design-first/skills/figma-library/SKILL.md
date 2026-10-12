@@ -75,6 +75,33 @@ node ~/.claude/skills/agents-init/skills/project-launch/board.mjs --page Kit
 Without `figma-library.json`, this is the path figma-new-file takes, and the
 report says the masters are local because there is no library on this machine.
 
+## Checking that an update landed in a consumer file
+
+After the library is published, a consumer file can take the update and still
+draw the old look. Four causes give the same picture, and none of them is a
+failed publish — on 2026-09-20 the second one nearly sent the owner to publish
+again for nothing.
+
+- **A hand override on the instance** — a raw colour, or a `height` in
+  `instance.overrides`. A local override always beats the master. Compare
+  `instance.height` with `(await instance.getMainComponentAsync()).height`, and
+  rebind colours with `setBoundVariableForPaint`.
+- **A stale import of the variable** — the override is bound to an old imported
+  copy of the token. Resolve the variable inside the consumer file
+  (`importVariableByKeyAsync`, then follow the alias chain) instead of reading
+  `fills` off an instance.
+- **An agent's import already applied the update.** `importComponentByKeyAsync`
+  pulls the latest published version and moves every instance in the file onto
+  it, so the Updates panel has nothing left to offer. Check the master's
+  geometry, not the panel.
+- **An import created a second local copy of the set.** Compare
+  `(await inst.getMainComponentAsync()).parent.id` with the set just imported;
+  if they differ, `swapComponent` onto the fresh variant, `resetOverrides()`,
+  and set the properties again.
+
+"Unchanged" collections in the Publish dialog are already published, not
+forgotten.
+
 ## Changing a master — for whoever maintains the canon
 
 A master is changed in the library, never in `spec.json` by hand, and the spec

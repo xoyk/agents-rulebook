@@ -108,6 +108,21 @@ while a template exists.
    rejected options, comparison boards — goes to `Legacy` too: that is where
    the answer to "why is it like this?" belongs.
 
+<!-- rule:design-on-ticket -->
+### The design travels with the ticket
+
+When an approved design goes to code, the developer finds it on the ticket, not
+by searching the design file:
+
+- **Links to the frames, as the tracker's own links** — the section, its
+  prototype and each flow row on the feature, and the exact frames on every
+  build task — besides any links in the text. On 2026-10-11 a feature reached
+  development with no design link at all, and the gap was noticed only that
+  evening.
+- **A before / after picture on every task that changes a screen**: today's
+  screen next to the approved frames, one image, each labelled with its frame
+  letter. The task reads at a glance without opening the design file.
+
 <!-- rule:approval-signal -->
 ### Approval is a flag, a choice is a framed comment
 
