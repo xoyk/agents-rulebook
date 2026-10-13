@@ -115,7 +115,7 @@ if (overrides) {
  * It owns the keys below and nothing else: the file doubles as the project's
  * configuration for the tools a module ships — figma.file, the palettes, where
  * the token lives — and rebuilding the object from scratch quietly deleted all
- * of it. On 2026-09-05 valey-core was wired up to the audit, re-stamped in the
+ * of it. On 2026-09-05 one project was wired up to the audit, re-stamped in the
  * same sitting, and the wiring was gone before anybody typed the command; the
  * run then failed for want of a token that had been configured minutes earlier.
  * This is the same fault `overrides` was already protected from, so protect the

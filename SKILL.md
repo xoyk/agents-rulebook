@@ -95,7 +95,7 @@ Briefly, as one question through the choice tool:
    second. Offer the first as the default for a solo developer.
 
    It is asked because it cannot be seen from inside one project. On
-   30 September 2026 Budgy's cover came out reading "Product — design" in a
+   30 September 2026 one project's cover came out reading "Product — design" in a
    Figma project where every neighbouring file was another app's design: the
    cover step had been written for the second arrangement and assumed it.
 
@@ -107,7 +107,7 @@ Briefly, as one question through the choice tool:
    skips the git hooks and says so.
 
    Never run `git init` without asking, however obviously right it looks. On
-   26 September 2026 4FH was installed as a plain directory and the agent
+   26 September 2026 a project was installed as a plain directory and the agent
    initialised it on its own initiative; the repository was wanted, the
    unasked question was not. A remote is not part of this question at all:
    where the work becomes visible is decided later, by the user.
@@ -221,7 +221,7 @@ check-ignore AGENTS.md` and installs the hooks that fit:
 - **In git** — the git pre-commit hook, the common denominator for any editor
   and any agent. It goes where the project already keeps its hooks. An
   existing `core.hooksPath` is followed, never re-pointed: on 15 September 2026
-  valey-site had `core.hooksPath = tools/hooks`, holding the pre-push gate that
+  one project had `core.hooksPath = tools/hooks`, holding the pre-push gate that
   keeps an unreleased commit off `main`, and `git config core.hooksPath
   .githooks` as this step used to say would have switched the gate off. A
   pre-commit that is already there is not edited: whether the block can go at

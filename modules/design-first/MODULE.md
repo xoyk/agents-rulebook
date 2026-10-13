@@ -167,7 +167,7 @@ it.
 - **A comment is answered in the section**, in `decided`, not by replying in
   Figma: a reply posts under the user's own name, and that is theirs to do.
 
-On 2026-09-28 in 4FH the first approval arrived this way — Ready for dev on the
+On 2026-09-28 in one project the first approval arrived this way — Ready for dev on the
 icon section, and a comment framed around option A. The agent read the text
 alone and reported that no option was named; then read the frame from its top
 left, when Figma stores it from the corner its pin sits on, landed on B2, and

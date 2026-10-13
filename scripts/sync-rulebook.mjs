@@ -421,7 +421,7 @@ function applyTo(root, r, head) {
    * The promise above — one git diff to read, one git checkout to undo — is
    * worth nothing where git cannot see the file, and the dirty check says
    * nothing there either: an ignored file is never "modified". A project may
-   * keep AGENTS.md out of its history on purpose; valey-core does, so the copy
+   * keep AGENTS.md out of its history on purpose; one project does, so the copy
    * can travel between worktrees without carrying the core's history into them.
    * On 2026-09-05 an --apply there wrote a section into a file with no diff and
    * no way back, and reported success. So: leave a copy beside it and say where.
