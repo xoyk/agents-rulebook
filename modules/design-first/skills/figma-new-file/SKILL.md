@@ -129,10 +129,26 @@ size, among its neighbours. So it carries two large things and one small one:
 From the library, the icon and the picture are **instance-swap properties**: the
 project makes two components of its own, `Cover icon — <project>` (220×220, the
 app icon itself) and `Cover picture — <project>` (900×760, the cloned frames),
-and swaps them into the `Thumbnail` instance. The ground comes from the
-library's `Cover` collection — a `Light` and a `Dark` mode, chosen on the
-instance — and a light ground is the default: on 1 October 2026 a dark app icon
-on a dark cover disappeared into it.
+and swaps them into the `Thumbnail` instance.
+
+**The ground is the product's own background**, not the library's. The
+`Thumbnail` paints it with the library's `cover/ground`, whose `Light` and
+`Dark` modes are the same for every file — a fallback for a file with no
+palette yet, and nothing more. A file that has a background colour overrides
+the instance's fill with it, bound to its own variable; an override on an
+instance survives library updates, so this is done once. On 13 October 2026 a
+cover built by this step sat on the library's cool grey while everything else in
+the file was a warm cream, and its owner asked why every project's cover had
+the same ground — the step said both "the ground comes from the library" and,
+further down, "colours come from the file's own variables". With the fallback,
+keep it light: on 1 October 2026 a dark app icon on a dark cover disappeared
+into it.
+
+**An icon on a ground of its own colour needs a shadow.** An app icon is often
+a tile in the product's background colour, so on the product's ground its edge
+vanishes. Put the shadow on `Cover icon — <project>` itself — a short one at
+the edge and a long soft one under it, in the product's ink at low opacity —
+since an instance-swap hands over the whole node and the slot keeps nothing.
 
 **An instance-swap hands over the whole node, so nothing of the slot survives
 it.** The rounding belongs to the placeholder the library ships, not to the
@@ -189,7 +205,7 @@ own motif — and confirm it in a screenshot, because the property values cannot
 tell you.
 
 Colours come from the file's own variables, so the cover is in the product's
-palette and not in a palette of its own. Where `figma.space` is `one-project`,
+palette and not in a palette of its own — the ground included, as above. Where `figma.space` is `one-project`,
 the collection has **one mode per product line** and each variant sets its own
 mode, so a colour is changed in one place; which line a file belongs to follows
 the project or folder it sits in, and the bindings name them. A tint is a solid
