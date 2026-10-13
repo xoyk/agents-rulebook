@@ -223,7 +223,7 @@ function install(root) {
    * work is visible, and the first commit is the person reading the agreements
    * and deciding they are right; neither belongs to an install.
    *
-   * On 26 September 2026 4FH was installed as a plain directory. The script said
+   * On 26 September 2026 a project was installed as a plain directory. The script said
    * `skip pre-commit: not a git repository`, a line that reads like a decision
    * although nobody had made one, and the agent then ran `git init` on its own
    * initiative. The init was right and the manner was wrong: whether a directory
@@ -336,7 +336,7 @@ function install(root) {
 /*
  * The apple module's Team: one per person, kept once per machine and copied into
  * the project's local signing file — modules/apple/MODULE.md, "The Team is found,
- * not asked for twice". On 28 September 2026 4FH needed it on its first device
+ * not asked for twice". On 28 September 2026 a project needed it on its first device
  * build, and it was found in another project on the machine in one search; the
  * user asked for the install to do that search. It is offered, never picked:
  * two teams on one machine is ordinary.
@@ -462,7 +462,7 @@ function mergeHooks(path, shown, step, wanted, what, report, act) {
 
 /*
  * The hook goes where the project already keeps its hooks, never over them.
- * On 15 September 2026 valey-site had core.hooksPath = tools/hooks, holding the
+ * On 15 September 2026 one project had core.hooksPath = tools/hooks, holding the
  * pre-push gate that lets only a tagged release commit onto main — the branch
  * that deploys the site. `git config core.hooksPath .githooks`, as the step was
  * written, would have switched that gate off without a word. So an existing
@@ -506,7 +506,7 @@ function preCommit(root, top, report, act) {
 
 // Nothing else takes a project out of the registry: a path that is gone is
 // skipped rather than dropped, since it may only be missing on this machine.
-// So retiring a project — the archived AI valey stayed listed for three weeks
+// So retiring a project — an archived project stayed listed for three weeks
 // after it was emptied — is a word somebody says, and this is where it is said.
 if (args.includes("--forget")) {
   const target = args[args.indexOf("--forget") + 1];

@@ -14,7 +14,7 @@ description: >-
 The design-first rule assumes a file with a `WIP` page, a kit to duplicate
 sections from and bindings in `.claude/rulebook.json`. A project that installs
 the module has none of that, and nothing said how to get it: on 27 September
-2026 Pult's file was assembled by hand, step by step, and each step below is
+2026 one project's file was assembled by hand, step by step, and each step below is
 one that was either done then or found missing the day after.
 
 This file is a tool of the design-first module, read from the skill directory
@@ -30,9 +30,9 @@ Masters every project needs — the WIP section's banner, `Brief`, row label,
 caption and note, the state fills, the `Thumbnail` cover — are not rebuilt in
 each file. They live once, in a library file published to the person's team,
 and a project instances them by key (`figma.importComponentByKeyAsync`). Built
-per file, they drifted within a day: on 1 October 2026 Pult's cover was rebuilt
+per file, they drifted within a day: on 1 October 2026 one project's cover was rebuilt
 twice in an afternoon to catch up with a canon its neighbours had already
-followed, while Budgy and chesswall each carried their own copy of the same
+followed, while two others each carried their own copy of the same
 masters.
 
 The library is the person's, not the canon's, so its keys live outside this
@@ -68,7 +68,7 @@ public repository, next to the registry:
 ## 1. The plan is the user's word
 
 Create the file in the team or organisation the user names. When the account
-belongs to more than one plan, ask — never pick the one that looks right. Pult's
+belongs to more than one plan, ask — never pick the one that looks right. One
 account had eight.
 
 ## 2. Pages, in this order
@@ -122,7 +122,7 @@ size, among its neighbours. So it carries two large things and one small one:
 - a **note**, small — one short line saying what the file holds, as a text
   property;
 - the **app icon**, above the name — **always**, not only when there is
-  nothing to photograph. On 1 October 2026 Pult's cover was built without it
+  nothing to photograph. On 1 October 2026 one cover was built without it
   and the user asked for it back: the icon is how the product is recognised
   everywhere else, in the Dock and the menu bar.
 
@@ -158,7 +158,7 @@ project's own component with square corners and the cover comes out square,
 while the API reports nothing wrong — there is no override to lose, because the
 radius was never on the slot. So **`Cover icon — <project>` carries its own
 radius**, 50 at 220×220, and the picture its own 24. Measured 2 October 2026 in
-chesswall, whose cover sat sharp-cornered beside rounded neighbours until its
+a project whose cover sat sharp-cornered beside rounded neighbours until its
 owner asked why; the step had said what the two components must be and not what
 they must look like, so following it to the letter produced the fault.
 
@@ -172,9 +172,9 @@ asked at install and kept in `figma.space`:
 
 **The cover never says what every neighbour also says.** In a space of many
 projects that word is "design": every file there is one. In a space of one
-project it is the product's name. On 30 September 2026 Budgy's cover was built
+project it is the product's name. On 30 September 2026 one project's cover was built
 to the earlier version of this step — a pill, a title in two lines, an emoji —
-and read `Budgy 3.0` / `Product — design`, with the mark beside it. Its owner
+and read `<Name> 3.0` / `Product — design`, with the mark beside it. Its owner
 keeps every app he builds in one Figma project, a file each, so the browser
 would have shown a row of covers all saying "Product design" in type four times
 the size of the only word that differed. That version had been written where
@@ -194,13 +194,13 @@ mark either.
 **A glyph drawn by a colour font ignores the fill it is given, silently.** The
 fill reads back as the colour that was set, and the glyph renders in the colour
 font's own palette, so nothing in the API says anything is wrong. On
-29 September 2026 chesswall's mark — ♟, `U+265F` — came out near-black on a
+29 September 2026 one project's mark — ♟, `U+265F` — came out near-black on a
 near-black ground — it was the emoji of the cover as this step then described
 it — and none of the usual symbol families (`Apple Symbols`,
 `Arial Unicode MS`, `Noto Sans Symbols 2`) was installed to switch to: the
 renderer substitutes one of its own, and the choice is not the plugin's to make.
 So do not paint a mark like this. **Seat it on a tile whose fill you do
-control** — chesswall's sits on a light board square, which is also the product's
+control** — that mark now sits on a light board square, which is also the product's
 own motif — and confirm it in a screenshot, because the property values cannot
 tell you.
 
@@ -278,7 +278,7 @@ audit on the kit section: it is the first thing in the file it can check.
   INSTANCE**, so a grid whose cells are instances cannot be addressed by
   coordinates at all. Append the children in row-major order instead — both
   captions, then both frames — and let auto-placement fill the tracks. Both were
-  measured on 29 September 2026 building chesswall's section template, where the
+  measured on 29 September 2026 building one project's section template, where the
   cells are caption instances above frames.
 - **`use_figma` skips hidden layers inside instances.** Its
   `skipInvisibleInstanceChildren` is on, so a layer hidden in a master is

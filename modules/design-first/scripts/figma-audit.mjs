@@ -920,7 +920,7 @@ async function main() {
      * A section's own fill is the ground its loose text sits on — the row labels
      * and frame captions of a WIP section, on its state tint. Walking each child
      * with empty ancestry left that fill out, so on 26 September 2026 every
-     * caption of a 4FH section read as "dark text on nothing painted": eight
+     * caption of one project's section read as "dark text on nothing painted": eight
      * blocking findings, all of them dark text on a light yellow ground.
      */
     const ancestry = root.type === 'SECTION' ? [root] : [];

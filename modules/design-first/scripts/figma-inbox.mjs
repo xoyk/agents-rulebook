@@ -20,7 +20,7 @@
  *
  * A comment's frame is stored as an offset from a node plus a size and the
  * corner its pin sits on — and the offset is that corner, not the top left.
- * Read as the top left, a frame drawn around A1 in 4FH on 28 September 2026
+ * Read as the top left, a frame drawn around A1 in one project on 28 September 2026
  * landed on B2, and a choice of option A was reported as B. The offset is also
  * measured against the node as it is now, so a section rebuilt after the
  * comment was left moves the frame with it: read the inbox before editing.
@@ -170,7 +170,7 @@ function picked(geo) {
  * A frame around no lettered frame is still around something — a note, a Brief
  * row — and naming it is what lets the comment be read at all. The outermost
  * covered nodes only: a note, not the note and its three text layers. When
- * nothing is half covered, the node covered most, with its share: in 4FH the
+ * nothing is half covered, the node covered most, with its share: in one project the
  * first framed comment held 39% of a note and all of its heading.
  */
 function coveredNames(geo) {
