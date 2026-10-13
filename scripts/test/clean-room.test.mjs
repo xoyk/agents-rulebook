@@ -14,7 +14,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const KIT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const MODULES = ["design-first", "release", "publishing", "team-feed", "apple"];
+const MODULES = ["design-first", "release", "publishing", "team-feed", "project-card", "apple"];
 
 function room() {
   const dir = mkdtempSync(join(tmpdir(), "rulebook-clean-"));
@@ -63,7 +63,7 @@ test("a fresh install with every module needs nothing but the Apple Team", () =>
   assert.doesNotMatch(text, STACK);
   const hand = text.split("\n").filter((l) => l.startsWith("hand"));
   assert.deepEqual(hand.map((l) => l.split(/\s{2,}/)[1]), ["apple team"], text);
-  for (const f of ["AGENTS.md", "BACKLOG.md", ".claude/rulebook.json", ".claude/rulebook.html"]) {
+  for (const f of ["AGENTS.md", "BACKLOG.md", "CARD.md", ".claude/rulebook.json", ".claude/rulebook.html"]) {
     assert.ok(existsSync(join(r.project, f)), `${f} was not written`);
   }
   // The registry went to the room's config, not to anybody's real one.
@@ -103,6 +103,19 @@ test("every machine-local file the kit mentions is optional where it is mentione
     local.lastIndex = 0;
   }
   assert.deepEqual(silent, [], `these name a machine-local file and never say what happens without it: ${silent.join(", ")}`);
+});
+
+test("the card arrives only with its module, and is never written over", () => {
+  const r = room();
+  writeFileSync(join(r.project, "AGENTS.md"), "# x\n\n<!-- rule:backlog -->\n## The backlog\n");
+  run("scripts/install.mjs", ["--git-init"], { cwd: r.project, env: r.env });
+  assert.ok(!existsSync(join(r.project, "CARD.md")), "CARD.md was written without the module");
+
+  const s = room();
+  assemble(s.project);
+  writeFileSync(join(s.project, "CARD.md"), "mine");
+  run("scripts/install.mjs", ["--git-init"], { cwd: s.project, env: s.env });
+  assert.equal(readFileSync(join(s.project, "CARD.md"), "utf8"), "mine");
 });
 
 test("the launch plan installs as it is", () => {

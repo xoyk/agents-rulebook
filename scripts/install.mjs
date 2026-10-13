@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Wires an assembled AGENTS.md into its project: the stamp, BACKLOG.md, the rendered page, the hooks that keep the page current, the
+ * Wires an assembled AGENTS.md into its project: the stamp, BACKLOG.md, CARD.md where the project-card module is in, the rendered page, the hooks that keep the page current, the
  * worktree hooks where the rulebook is out of git, and the registry entry.
  *
  * Until this script existed, all of that was prose in SKILL.md, carried out by
@@ -259,6 +259,16 @@ function install(root) {
   const backlog = join(root, "BACKLOG.md");
   if (existsSync(backlog)) report("ok", "BACKLOG.md", "present");
   else act("BACKLOG.md", "from templates/BACKLOG.md", () => copyFileSync(join(SKILL_ROOT, "templates/BACKLOG.md"), backlog));
+
+  // ---------------------------------------------------------------- CARD.md
+  // Only with the project-card module, read from its anchor like every other
+  // module. The template arrives empty; filling it from the code is the skill's.
+  if (readFileSync(agents, "utf8").includes("<!-- rule:project-card -->")) {
+    const card = join(root, "CARD.md");
+    if (existsSync(card)) report("ok", "CARD.md", "present");
+    else act("CARD.md", "from modules/project-card/CARD.md — fill it from the code", () =>
+      copyFileSync(join(SKILL_ROOT, "modules/project-card/CARD.md"), card));
+  }
 
   // ---------------------------------------------------------------- page
   // Rendered after the stamp, because the page badges sections against it.

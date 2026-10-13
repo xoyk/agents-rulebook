@@ -1,6 +1,6 @@
 ---
 name: agents-init
-description: Installs working agreements into a project — AGENTS.md and BACKLOG.md, assembled from the templates and modules in this skill, then stamped so the copy can be compared with the canon later. A core plus optional modules: a design-first cycle, releases, publishing a public page, and a team feed. Use it when someone starts a new project and asks for working agreements, conventions, an AGENTS.md, a "starter" or a "rules template", invokes /agents-init, or when an existing repository has no such rules and they ask for them. Do not use it to edit an AGENTS.md that is already installed — that is ordinary file editing.
+description: Installs working agreements into a project — AGENTS.md and BACKLOG.md, assembled from the templates and modules in this skill, then stamped so the copy can be compared with the canon later. A core plus optional modules: a design-first cycle, releases, publishing a public page, a team feed, a project card and an Apple app. Use it when someone starts a new project and asks for working agreements, conventions, an AGENTS.md, a "starter" or a "rules template", invokes /agents-init, or when an existing repository has no such rules and they ask for them. Do not use it to edit an AGENTS.md that is already installed — that is ordinary file editing.
 ---
 
 # Working agreements for a project
@@ -54,7 +54,7 @@ the template by meaning rather than by heading, and mark everything else
 `<!-- local:<id> -->`. It is a one-off job, and until it is done the copy cannot
 be compared with the canon or with any other project.
 
-### 2. Ask six things, and two more only where they apply
+### 2. Ask seven things, and two more only where they apply
 
 Briefly, as one question through the choice tool:
 
@@ -77,7 +77,13 @@ Briefly, as one question through the choice tool:
    module is needed. It covers an agent drafting a one-line message for the
    team's channel when a notable change lands, and posting it only on the
    user's yes. It needs the channel's name, which fills its one `{{...}}`.
-6. **Whether there is an Apple app** — iPhone, iPad or Mac, native or Expo —
+6. **Whether the project is shown anywhere else** — a portfolio, a catalogue,
+   a store draft, a talk — whether the `project-card` module is needed. It
+   covers `CARD.md` at the root: what the project is, in a form anyone
+   presenting it copies from, kept true by the commits that change it. The
+   install puts the empty template there; fill it from the code before the
+   report, as the first thing the card is checked against.
+7. **Whether there is an Apple app** — iPhone, iPad or Mac, native or Expo —
    whether the `apple` module is needed. It covers the generated Xcode project
    nobody clicks settings into, the signing Team kept in a local file and found
    on the machine rather than asked for again, simulator commands that name
@@ -85,7 +91,7 @@ Briefly, as one question through the choice tool:
    Apple app at all, not about the App Store: a device build needs the Team
    from the first day, releases or none.
 
-7. **Only when design is in the loop: how the design space is arranged.** Two
+8. **Only when design is in the loop: how the design space is arranged.** Two
    answers. *Many projects in one space* — a person or a studio keeping every
    app they build side by side, a file each. *One project, many files* — a
    product or a product line spread over a library, the screens, the emails.
@@ -99,7 +105,7 @@ Briefly, as one question through the choice tool:
    Figma project where every neighbouring file was another app's design: the
    cover step had been written for the second arrangement and assumed it.
 
-8. **Only when step 1 found no repository: whether to start one.** Local only —
+9. **Only when step 1 found no repository: whether to start one.** Local only —
    `git init` on `main`, no remote, nothing committed. Offer "yes" first and
    mark it recommended: every rule in the core assumes a repository, and so
    does the pre-commit hook that keeps the page current. The answer yes is
@@ -118,7 +124,8 @@ are cheaper to correct later than to guess now.
 ### 3. Assemble the file
 
 Assembly order: `templates/AGENTS.core.md` → the chosen modules in the order
-listed above (`design-first`, `release`, `publishing`, `team-feed`, `apple`) →
+listed above (`design-first`, `release`, `publishing`, `team-feed`,
+`project-card`, `apple`) →
 `templates/AGENTS.tail.md`.
 
 The tail always comes last: it is the section about how to extend the file, and
@@ -156,6 +163,8 @@ whatever is in place, so running it twice is safe:
   when there is none. For a rulebook that was not assembled here, pass
   `--basis adopted`.
 - **`BACKLOG.md`** from `templates/BACKLOG.md` — only when it does not exist.
+- **`CARD.md`** from `modules/project-card/CARD.md` — only with that module,
+  and only when it does not exist.
 - **The page**, `.claude/rulebook.html`, through `render-rulebook.mjs`.
 - **The Claude Code hook** that redraws the page when `AGENTS.md` is edited,
   merged into the project's `.claude/settings.json`.
