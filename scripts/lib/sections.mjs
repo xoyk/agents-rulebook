@@ -22,6 +22,7 @@ export const MODULE_OF = {
             "build-numbers", "finishing-release"],
   publishing: ["publishing", "publishing-is-overwriting", "public-invented-data"],
   "team-feed": ["team-feed"],
+  "project-card": ["project-card"],
   apple: ["apple-generated-project", "apple-team", "apple-simulator", "apple-device"],
 };
 
