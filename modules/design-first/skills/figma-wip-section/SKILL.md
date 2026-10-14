@@ -265,6 +265,15 @@ The two rows share the index: `B5` is the larger frame of the step `A5` draws,
 so a reviewer names a step and its platform at once. A step with no frame on
 one platform leaves its index unused in that row rather than shifting the rest.
 
+**The phone row is laid out at the phone's width.** Its frames sit side by side
+at their own size, about 80 apart, with captions as wide as the frame; they do
+not borrow the columns of the larger row below. The index pairs a phone frame
+with its twin, not the x position. Spread on tablet-wide columns, phone screens
+end up a screen-width apart and are hard to review against each other, and the
+only thing gained is a tidy look from far away — the user who set this rule
+called that a poor trade on 2026-10-14. In a grid row, give the phone row's
+frames grid its own fixed column width.
+
 ## Colour is the state
 
 The section's own fill carries its state, so the page reads as a status board at
