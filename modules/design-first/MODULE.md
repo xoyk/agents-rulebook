@@ -37,8 +37,9 @@ template, masters and colours from the `figma.wip` block of
 `.claude/rulebook.json`, and a section is not built by hand from primitives
 while a template exists.
 
-1. **Name the screens it touches** before drawing anything. That list is what
-   gets promoted at step 4.
+1. **Name the screens it touches** before drawing anything, with the place in
+   production each one lives in. A screen that only gains a banner, a badge or
+   a new state counts. That list is what gets promoted at step 4.
 2. **Create a section** named `<state> WIP — <feature>` and draw the new
    versions inside it, copied from the production frames. The state is a
    coloured circle so it reads from the canvas and from the layers list:
@@ -59,8 +60,11 @@ while a template exists.
    - **why** — the question a person has that the product does not answer
      today. This is the row the format exists for: a `Brief` whose *why*
      restates its *what* has not been thought about yet.
-   - **replaces** — the production frames this will be promoted over, or
-     `Nothing — new screen` in as many words. Never left blank.
+   - **replaces** — every production frame this changes, named with the
+     section it lives in, a screen that only gains a banner or a new state
+     included, and for a new state the section it joins. `Nothing — new
+     screen` only when no screen the product already ships looks any
+     different. Never left blank.
    - **entry points** — the files the implementation will touch, named as a
      proposal, so the size of the change is visible before anything is drawn.
    - **decided** — every decision taken with the user, one line each, appended
@@ -107,6 +111,23 @@ while a template exists.
    their place, and delete the now-empty `WIP` section. Exploration —
    rejected options, comparison boards — goes to `Legacy` too: that is where
    the answer to "why is it like this?" belongs.
+
+   **A promotion moves frames, not the section.** A `WIP` section is organised
+   by feature and production by screen, so each frame goes to the section of
+   the screen it draws. A changed screen replaces its frame there, as
+   *Archiving* below sets out. A new state of a screen that still ships
+   without it — a banner, a loading state, a branch — joins that screen's
+   section as a step or a flow of its own. Only a screen production has no
+   section for gets a new one, numbered and placed inside the page's existing
+   structure. A target section laid out in an older way is brought to the
+   page's current layout first; its age is no reason to build a new section
+   beside it. The `figma-wip-section` skill has the procedure.
+
+   On 2026-10-12 one project promoted a guided first run as one new section,
+   though its frames were three existing settings screens with a banner on
+   top; its **replaces** said "nothing in production", true only of the
+   checklist, and the three screens' own sections never learned they had a
+   first-run state.
 
 <!-- rule:design-on-ticket -->
 ### The design travels with the ticket
