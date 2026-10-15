@@ -3,10 +3,12 @@ name: figma-wip-section
 description: >-
   How a feature section on a Figma WIP page is built and kept — named, tinted,
   laid out, which masters it instances, how its frames are lettered and how its
-  references link out. Read it before opening a new WIP section, adding frames
-  to one, changing its state, or answering why a section looks unlike its
-  neighbours. What the Brief must say is the design-first rule in the project's
-  AGENTS.md; this governs what the section looks like. Everything project-specific
+  references link out, and where its frames land at promotion. Read it before
+  opening a new WIP section, adding frames to one, changing its state,
+  promoting its frames into production, or answering why a section looks unlike
+  its neighbours. What the Brief must say is the design-first rule in the
+  project's AGENTS.md; this governs what the section looks like and where its
+  frames go. Everything project-specific
   comes from the `figma.wip` block of the project's `.claude/rulebook.json`.
 ---
 
@@ -467,7 +469,8 @@ it was built from when the variable does not resolve.
    a library component, a shared-kit master, or one of this section's own local
    masters — and no master this section owns is instanced by another section.
 6. Every `Brief` row is filled. An empty **why** is the one the format exists to
-   expose.
+   expose. **replaces** names a production section for every screen the frames
+   draw, as *At promotion, each frame goes to its screen's section* sets out.
 7. Every row of frames is the two-track grid, and its frames start on one line.
 8. No placeholder slot from the template is left. A rejected row is faded as a
    whole, labelled with 🧪 and what lost, and sits after the chosen rows.
@@ -487,3 +490,42 @@ it was built from when the variable does not resolve.
     the page for a section hidden under another, are done by eye.
 11. Every changed frame was looked at closely, as *Look at what you changed*
     describes — not judged from a whole-section screenshot.
+
+## At promotion, each frame goes to its screen's section
+
+A `WIP` section is organised by feature and a production page by screen, so a
+promotion takes the section apart. Before the first write in production, write
+out the mapping, one line per `WIP` frame, and show it to the user with the
+plan:
+
+| WIP frame | Production section | Outcome |
+| --- | --- | --- |
+| `A1 · Phone / Onboarding / Opening hours — with banner` | `Settings › 07. Opening hours` | joins: flow "from onboarding" |
+| `A2 · Phone / Default start tab` | `Settings › 02. General` | replaces `General — Phone` |
+| `A3 · Phone / Onboarding / Checklist` | `Home` | new section: no screen to join |
+
+Every frame has exactly one of three outcomes:
+
+- **Replaces.** The screen now looks different every time it ships. The new
+  content goes into the live frame, which keeps its node id, and a copy of the
+  old one goes to `Legacy`, as the module's *Archiving* rule sets out.
+- **Joins.** A new state of a screen that still ships without it: a banner
+  shown only during onboarding, a loading state, an error branch. It becomes a
+  step in that screen's flow, or a row of its own whose label names the
+  condition ("from onboarding: the banner on top"), with the phone row first
+  and the indexes shared, as *One row per platform, phone first* sets out.
+- **New section.** Only for a screen production has no section for. It takes
+  the next number in the page's order, inside the page's existing structure —
+  device parents, groups — and the sections below shift down.
+
+A `WIP` row that walks across several screens is split: each screen's frames go
+to that screen's section, and the row label there says where the flow comes
+from. A target section still laid out by coordinates is converted to
+auto-layout rows first, as *The layout is auto-layout, not coordinates*
+describes; that is part of the promotion, not a reason to build a new section
+beside it. A frame with no line in the mapping is not promoted.
+
+On 2026-10-12 one project promoted a guided first run as a new section of its
+own, though its frames were three existing settings screens with a banner on
+top; its **replaces** said "nothing in production", true only of the
+checklist, and those screens' sections still do not show their first-run state.
