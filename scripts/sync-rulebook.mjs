@@ -54,6 +54,7 @@ const REGISTRY = join(
 );
 const TEMPLATES = [
   "templates/AGENTS.core.md",
+  "modules/team-repo/MODULE.md",
   "modules/design-first/MODULE.md",
   "modules/release/MODULE.md",
   "modules/publishing/MODULE.md",

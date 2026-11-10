@@ -14,7 +14,7 @@ Requirements: `git` and Node 18 or newer. Nothing is installed with npm; every s
 git clone git@github.com:xoyk/agents-rulebook.git ~/.claude/skills/agents-init
 ```
 
-The repository is the skill directory, so that clone is the whole installation. Then, in a project, run `/agents-init` in Claude Code. It asks seven questions — what the project is, and whether design, releases, a public page, a team feed, a card for showing the project elsewhere and an Apple app are in the loop — plus two that are asked only where they apply: how the design space is arranged, many projects side by side or one project in many files, where design is in the loop; and whether to start a local repository (no remote, nothing committed) where the directory is not one yet. Then it leaves behind:
+The repository is the skill directory, so that clone is the whole installation. Then, in a project, run `/agents-init` in Claude Code. It asks eight questions — what the project is, and whether several people merge through pull requests, design, releases, a public page, a team feed, a card for showing the project elsewhere and an Apple app are in the loop — plus two that are asked only where they apply: how the design space is arranged, many projects side by side or one project in many files, where design is in the loop; and whether to start a local repository (no remote, nothing committed) where the directory is not one yet. Then it leaves behind:
 
 | File | What it is |
 |---|---|
@@ -45,9 +45,10 @@ Updating the canon on this machine is `git pull` in the skill directory — a sk
 | Path | What it covers |
 |---|---|
 | `SKILL.md` | The installation procedure as a Claude Code skill: what to ask, what to assemble, what to stamp, what never to overwrite. |
-| `templates/AGENTS.core.md` | Always installed. Reporting back, saying what actually happened, names, the backlog, working in parallel and what worktrees do not fix, commits, pushing, merging and releasing, things only the user does. |
+| `templates/AGENTS.core.md` | Always installed. Reporting back, saying what actually happened, names, the backlog, working in parallel and what worktrees do not fix, commits and the scratch files that stay out of them, pushing, merging and releasing, things only the user does. |
 | `templates/AGENTS.tail.md` | Always installed, always last. How to extend the file, section anchors, canon precedence. |
 | `templates/BACKLOG.md` | The backlog a project starts with. |
+| `modules/team-repo/` | A repository several people merge into through pull requests: everything team-wide in one language, branch names, the ticket key in every branch, title and subject, a pull request body a reviewer can act on, and an independent review of every pull request an agent opens. |
 | `modules/design-first/` | Code starts only after an approved frame: a `WIP` section per piece of work, approved by a flag and chosen by a framed comment, promoting its components with it, archiving, placement, the Figma painting traps that ship invisible text, one owner for a shared design file — plus `scripts/figma-audit.mjs`, which checks frames for all of it, `scripts/figma-inbox.mjs`, which reads the approvals and framed comments the plugin API cannot see, `skills/figma-wip-section/SKILL.md`, which says how a `WIP` section is built, and `skills/figma-new-file/SKILL.md`, which sets up a project's file — pages, kit and cover — before the first section. |
 | `modules/release/` | Release notes generated from per-audience commit trailers instead of remembered, the one tree a release is cut in, build numbers, and finishing a release. The store-specific sections are deleted where there is no store. |
 | `modules/publishing/` | A published file cannot be withdrawn, only overwritten; anything shown in public is drawn from invented data at the source. |

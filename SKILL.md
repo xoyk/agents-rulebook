@@ -1,6 +1,6 @@
 ---
 name: agents-init
-description: Installs working agreements into a project — AGENTS.md and BACKLOG.md, assembled from the templates and modules in this skill, then stamped so the copy can be compared with the canon later. A core plus optional modules: a design-first cycle, releases, publishing a public page, a team feed, a project card and an Apple app. Use it when someone starts a new project and asks for working agreements, conventions, an AGENTS.md, a "starter" or a "rules template", invokes /agents-init, or when an existing repository has no such rules and they ask for them. Do not use it to edit an AGENTS.md that is already installed — that is ordinary file editing.
+description: Installs working agreements into a project — AGENTS.md and BACKLOG.md, assembled from the templates and modules in this skill, then stamped so the copy can be compared with the canon later. A core plus optional modules: a team repository, a design-first cycle, releases, publishing a public page, a team feed, a project card and an Apple app. Use it when someone starts a new project and asks for working agreements, conventions, an AGENTS.md, a "starter" or a "rules template", invokes /agents-init, or when an existing repository has no such rules and they ask for them. Do not use it to edit an AGENTS.md that is already installed — that is ordinary file editing.
 ---
 
 # Working agreements for a project
@@ -54,36 +54,49 @@ the template by meaning rather than by heading, and mark everything else
 `<!-- local:<id> -->`. It is a one-off job, and until it is done the copy cannot
 be compared with the canon or with any other project.
 
-### 2. Ask seven things, and two more only where they apply
+### 2. Ask eight things, and two more only where they apply
 
 Briefly, as one question through the choice tool:
 
 1. **What the project is** — one line, which goes into the heading and the
    examples.
-2. **Whether design is in the loop** — whether the `design-first` module is
+2. **Whether several people merge here through pull requests** — whether the
+   `team-repo` module is needed. It covers the language everything team-wide
+   is written in, branch names, the ticket key in every branch, title and
+   subject, a pull request body a reviewer can act on, and an independent
+   review of every pull request an agent opens. Such a project usually also
+   declares overrides of `pushing` and `merge-and-release`, which are written
+   for one person merging their own accepted branch: say so in the report and
+   write the overrides with the user's reasons.
+
+   Asked because the core cannot see it. On 2026-11-07 one team's repositories
+   each carried their own copy of these five rules, written separately and
+   already disagreeing — three branch formats among four copies, and a
+   language rule one repository simply never got.
+3. **Whether design is in the loop** — whether the `design-first` module is
    needed. It covers code starting only after an approved mockup, how an agent
    avoids breaking the design file, and the audit script that checks the frames.
-3. **Whether there are releases** — whether the `release` module is needed. It
+4. **Whether there are releases** — whether the `release` module is needed. It
    covers notes assembled from commit trailers rather than remembered at the
    end, and a draft release not being published without a human. The sections
    about build numbers and the tree a release is cut in apply only where there
    is a store; without one they are deleted.
-4. **Whether there is a public page** — whether the `publishing` module is
+5. **Whether there is a public page** — whether the `publishing` module is
    needed. It covers a published file being impossible to withdraw and only
    possible to overwrite, and everything shown in public being drawn on invented
    data from the start. Any project with a site, a landing page or a demo wants
    it, not only the ones with a CDN.
-5. **Whether the team keeps a feed of changes** — whether the `team-feed`
+6. **Whether the team keeps a feed of changes** — whether the `team-feed`
    module is needed. It covers an agent drafting a one-line message for the
    team's channel when a notable change lands, and posting it only on the
    user's yes. It needs the channel's name, which fills its one `{{...}}`.
-6. **Whether the project is shown anywhere else** — a portfolio, a catalogue,
+7. **Whether the project is shown anywhere else** — a portfolio, a catalogue,
    a store draft, a talk — whether the `project-card` module is needed. It
    covers `CARD.md` at the root: what the project is, in a form anyone
    presenting it copies from, kept true by the commits that change it. The
    install puts the empty template there; fill it from the code before the
    report, as the first thing the card is checked against.
-7. **Whether there is an Apple app** — iPhone, iPad or Mac, native or Expo —
+8. **Whether there is an Apple app** — iPhone, iPad or Mac, native or Expo —
    whether the `apple` module is needed. It covers the generated Xcode project
    nobody clicks settings into, the signing Team kept in a local file and found
    on the machine rather than asked for again, simulator commands that name
@@ -91,7 +104,7 @@ Briefly, as one question through the choice tool:
    Apple app at all, not about the App Store: a device build needs the Team
    from the first day, releases or none.
 
-8. **Only when design is in the loop: how the design space is arranged.** Two
+9. **Only when design is in the loop: how the design space is arranged.** Two
    answers. *Many projects in one space* — a person or a studio keeping every
    app they build side by side, a file each. *One project, many files* — a
    product or a product line spread over a library, the screens, the emails.
@@ -105,7 +118,7 @@ Briefly, as one question through the choice tool:
    Figma project where every neighbouring file was another app's design: the
    cover step had been written for the second arrangement and assumed it.
 
-9. **Only when step 1 found no repository: whether to start one.** Local only —
+10. **Only when step 1 found no repository: whether to start one.** Local only —
    `git init` on `main`, no remote, nothing committed. Offer "yes" first and
    mark it recommended: every rule in the core assumes a repository, and so
    does the pre-commit hook that keeps the page current. The answer yes is
@@ -124,8 +137,8 @@ are cheaper to correct later than to guess now.
 ### 3. Assemble the file
 
 Assembly order: `templates/AGENTS.core.md` → the chosen modules in the order
-listed above (`design-first`, `release`, `publishing`, `team-feed`,
-`project-card`, `apple`) →
+listed above (`team-repo`, `design-first`, `release`, `publishing`,
+`team-feed`, `project-card`, `apple`) →
 `templates/AGENTS.tail.md`.
 
 The tail always comes last: it is the section about how to extend the file, and
