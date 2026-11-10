@@ -14,7 +14,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const KIT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const MODULES = ["design-first", "release", "publishing", "team-feed", "project-card", "apple"];
+const MODULES = ["team-repo", "design-first", "release", "publishing", "team-feed", "project-card", "apple"];
 
 function room() {
   const dir = mkdtempSync(join(tmpdir(), "rulebook-clean-"));
