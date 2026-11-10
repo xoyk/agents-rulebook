@@ -13,7 +13,7 @@ outside it, as the core rules say, and merge into `main` there only when the
 work is accepted:
 
 ```bash
-git -C ~/.claude/skills/agents-init worktree add ../../Projects/agents-rulebook-<topic> -b <topic>
+git -C ~/.claude/skills/agents-init worktree add ../../../Projects/agents-rulebook-<topic> -b <topic>
 ```
 
 ## It works on a machine that is not its owner's
