@@ -157,6 +157,20 @@ piece of work.
 - **Committing is not pushing, and not merging.** Those are the next two
   sections, and they are decided separately from this one.
 
+<!-- rule:scratch-files -->
+### Session scratch files are not commits
+
+Plans, notes to self, intermediate output and throwaway scripts stay out of the
+history. Write them to the scratch directory the session is given, outside the
+checkout; if one lands in the tree anyway, remove it before committing rather
+than after. `git add -A` does not know which files were meant for a reader, and
+a plan committed by accident is a plan published to everyone who clones.
+
+It was one line of one project's assistant workflow until 2026-11-07, when the
+same line turned up copied by hand into a second project as the one part of
+that workflow that applied everywhere. A rule two projects copy by hand belongs
+in the canon.
+
 <!-- rule:pushing -->
 ## Pushing: the branch is yours, `main` is not
 

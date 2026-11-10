@@ -13,9 +13,10 @@ import { createHash } from "node:crypto";
 /** Which module each canonical id belongs to. Ids absent here are unknown. */
 export const MODULE_OF = {
   core: ["reporting-back", "honest-reporting", "code-before-people", "agent-names", "backlog",
-         "parallel-work", "worktree-limits", "commits", "pushing",
+         "parallel-work", "worktree-limits", "commits", "scratch-files", "pushing",
          "merge-and-release", "user-only", "extending", "section-anchors",
          "canon-precedence"],
+  "team-repo": ["team-language", "branch-names", "ticket-keys", "pr-body", "independent-review"],
   "design-first": ["design-first", "wip-section", "design-on-ticket", "approval-signal", "component-promotion",
                    "archiving", "placement", "painting", "design-file-shared"],
   release: ["release-notes", "release-pictures", "release-tree",
