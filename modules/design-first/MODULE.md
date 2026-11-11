@@ -140,9 +140,10 @@ by searching the design file:
   build task — besides any links in the text. On 2026-10-11 a feature reached
   development with no design link at all, and the gap was noticed only that
   evening.
-- **A before / after picture on every task that changes a screen**: today's
-  screen next to the approved frames, one image, each labelled with its frame
-  letter. The task reads at a glance without opening the design file.
+- **A before / after card per change on every task that changes a screen**:
+  the block of today's screen that changes next to the same block in the
+  approved frame, with a title, one line on the change and its frame letters.
+  The task reads at a glance without opening the design file.
 
 <!-- rule:approval-signal -->
 ### Approval is a flag, a choice is a framed comment
