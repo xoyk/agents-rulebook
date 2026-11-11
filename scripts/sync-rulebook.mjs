@@ -9,8 +9,10 @@
  * both texts — and only the base tells them apart.
  *
  * Detection compares canon to canon (two revisions of the template) and copy to
- * copy (the file against its own stamp). It never compares the template's text
- * to the project's, because a filled-in `{{...}}` differs there by design.
+ * copy (the file against its own stamp). It never looks for a difference
+ * between the template's text and the project's, because a filled-in `{{...}}`
+ * differs there by design. It only asks whether they are the same: a section
+ * already word for word the canon's is in step, whatever the stamp says.
  *
  * Reporting is the default and `--apply` is opt-in, because a rule arrives in a
  * project after a human has read the diff. What `--apply` automates is only the
@@ -208,6 +210,9 @@ function examine(root) {
       rows.push({ id, verdict: "predates-canon" });
       continue;
     }
+    // Both moved to the same words: a copy's departure that the canon later
+    // took — the way an override retires. There is nothing to take or offer.
+    if (hash(mine[id].body) === hash(head[id].body)) continue;
     if (canonMoved && localMoved) rows.push({ id, verdict: "conflict" });
     else if (canonMoved) rows.push({ id, verdict: "update" });
     else if (localMoved) rows.push({ id, verdict: "ours" });

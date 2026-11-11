@@ -132,6 +132,8 @@ Every run first says where this clone of the canon stands against its own remote
 | `predates-canon` | The section was here before the canon had it. | Nothing — this is where it came from. |
 | `override` | The project departs from the canon on purpose. | Nothing; the reason is printed on every run. |
 
+A section whose text is already word for word the canon's is not reported, whatever its stamp says. That is how an override retires: the canon takes the project's wording, the project drops the override, and the section goes quiet without a re-stamp.
+
 `--apply` takes only `update` and `new`. It refuses to write a `conflict`, refuses to write over a declared override, refuses to carry text that still holds `{{...}}`, and refuses to run at all when `AGENTS.md` has uncommitted changes — so the result always reads as one `git diff` and comes off with one `git checkout`. Every refusal is printed, because a silent skip reads as "applied". After writing, it re-stamps the file.
 
 ### Declaring a deviation

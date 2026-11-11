@@ -322,8 +322,11 @@ silent, because silence would read as "up to date".
 There is no broadcast and there will not be one. The canon does not know its
 copies; the copies know their stamp, so the pulling side is always the one that
 acts. The script compares canon with canon (two template commits) and a copy
-with itself (its file against its stamp). It never compares template text with
-project text — those have filled-in `{{...}}` and the diff would be noise.
+with itself (its file against its stamp). It never diffs template text with
+project text — those have filled-in `{{...}}` and the diff would be noise. It
+only checks them for sameness: a section already word for word the canon's is
+in step and not reported, which is how an override retires once the canon takes
+its wording.
 
 | verdict | what happened | what to do |
 |---|---|---|
