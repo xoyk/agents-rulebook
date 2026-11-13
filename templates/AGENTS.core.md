@@ -65,6 +65,44 @@ menu twice — once into a design file, once into a pull request — before anyo
 searched for its call site. Find the caller before describing behaviour from
 code.
 
+<!-- rule:unblock-first -->
+## Ask the user to unblock the best path
+
+**When something blocks the best way to do a task and the user can remove it,
+stop and ask them to.** Do not switch on your own to a slower, costlier way
+that happens to work today. A bot check, a missing token or permission, a rate
+limit, a disabled tool, a setting only the user can change: each one is a
+question for the user the first time it shows up, not a puzzle to route around.
+
+Make the ask short and easy to answer:
+
+- **What blocks**, with the error exactly as it printed.
+- **The one-time fix**: exactly what the user does (the console page, the
+  setting, the command) and what it unlocks for every later run, not only this
+  one.
+- **What the workaround would cost instead**: time, the user's usage limits,
+  windows opening on their screen, flaky results, and what it would still leave
+  unproven.
+
+Then wait for the answer, and carry on meanwhile with the parts of the task the
+blocker does not touch. Take the workaround only when the user says so, or when
+the fix is really out of their reach, and say which it was in the report. Good
+intentions do not change this. "I'll just get it done" on the worse path is
+still a choice the user did not make, and they pay for it out of their limits.
+While the ask is open, it goes in `Needed from you`.
+
+This is the counterpart of [Ask the code before a person](#ask-the-code-before-a-person).
+That rule keeps away from people the questions the code can answer. This one
+brings people the questions only they can answer, and brings them early.
+
+On 2026-11-13 a staging acceptance run hit a bot check that refuses headless
+browsers after a few dozen sign-ins. The fix was one debug token, registered in
+the backend console by the user in about a minute. The agent did not ask for
+it. It moved the run to visible browser windows on the user's screen, reran the
+suite three times and debugged stuck sign-ins. That used up a visible share of
+the user's session limits, and it was not the first time an agent there had
+taken the long way it could reach over asking for the short one.
+
 <!-- rule:agent-names -->
 ## Names
 
